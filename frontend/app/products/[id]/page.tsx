@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Calendar, ChevronLeft, Info, MapPin, MessageCircle, ShieldCheck, Store } from "lucide-react";
+import { Calendar, ChevronLeft, Info, MapPin, MessageCircle, ShieldCheck, Store, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -18,6 +18,7 @@ import {
   PageContainer,
 } from "@/components/ui";
 import { productsApi } from "@/lib/api";
+import { cn } from "@/lib/utils";
 import type { ProductResponse, ProductStatus } from "@/types";
 
 type ProductDetailPageProps = {
@@ -102,7 +103,32 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
                 <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                   {product.name}
                 </h1>
-                <p className="mt-4 text-3xl font-black text-accent">{formatVND(product.price)}</p>
+
+                <div className="mt-4 flex items-center gap-6">
+                   <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1">
+                         {[1, 2, 3, 4, 5].map(s => (
+                            <Star 
+                               key={s} 
+                               className={cn(
+                                  "h-4 w-4", 
+                                  s <= Math.round(product.averageRating || 5) ? "fill-amber-400 text-amber-400" : "text-slate-200"
+                               )} 
+                            />
+                         ))}
+                      </div>
+                      <span className="text-sm font-black text-slate-900">{product.averageRating?.toFixed(1) || "5.0"}</span>
+                   </div>
+                   
+                   <div className="h-4 w-px bg-slate-200" />
+                   
+                   <div className="flex items-center gap-2">
+                      <span className="text-sm font-black text-slate-900">{product.soldCount || 0}</span>
+                      <span className="text-sm font-bold text-slate-400">Đã bán</span>
+                   </div>
+                </div>
+
+                <p className="mt-6 text-3xl font-black text-accent">{formatVND(product.price)}</p>
               </CardHeader>
 
               <CardContent className="mt-6 space-y-8 px-0">

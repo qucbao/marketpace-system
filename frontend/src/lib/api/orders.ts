@@ -14,4 +14,6 @@ export const ordersApi = {
     apiClient.post<OrderResponse>(`/orders/${id}/confirm-delivery`, {}),
   releaseEscrow: (id: number) =>
     apiClient.post<OrderResponse>(`/orders/${id}/release-escrow`, {}),
+  getEligibleToReview: (productId: number) =>
+    apiClient.get<OrderResponse[]>(`/orders/eligible-to-review?productId=${productId}`),
 };

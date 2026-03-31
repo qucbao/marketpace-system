@@ -1,5 +1,8 @@
 export interface CommentCreateRequest {
   content: string;
+  rating: number;
+  imageUrls?: string;
+  orderId?: number;
 }
 
 export interface CommentResponse {
@@ -9,4 +12,7 @@ export interface CommentResponse {
   userName: string;
   content: string;
   createdAt: string;
+  rating: number;
+  imageUrls?: string;
+  orderId?: number;
 }

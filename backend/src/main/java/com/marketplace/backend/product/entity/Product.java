@@ -65,6 +65,12 @@ public class Product {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(name = "average_rating")
+    private Double averageRating = 0.0;
+
+    @Column(name = "sold_count")
+    private Integer soldCount = 0;
+
     public Product() {
     }
 
@@ -172,5 +178,21 @@ public class Product {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+ 
+    public Double getAverageRating() {
+        return averageRating;
+    }
+ 
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+ 
+    public Integer getSoldCount() {
+        return soldCount;
+    }
+ 
+    public void setSoldCount(Integer soldCount) {
+        this.soldCount = soldCount;
     }
 }

@@ -41,4 +41,6 @@ export interface ProductResponse {
   createdAt: string;
   updatedAt: string;
   imageUrls: string[];
+  averageRating: number;
+  soldCount: number;
 }

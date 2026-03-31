@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { Clock, Receipt, ShoppingBag, Store, ChevronRight } from "lucide-react";
+import { Clock, Receipt, ShoppingBag, Store, ChevronRight, Star, ExternalLink } from "lucide-react";
+import { filesApi } from "@/lib/api/files";
 
 import {
   AppShell,
@@ -61,69 +62,107 @@ export function OrderHistoryContent() {
               description="Khi bạn hoàn tất thanh toán, đơn hàng sẽ xuất hiện tại đây."
             />
           ) : (
-            <div className="grid gap-4">
-              {orders.map((order) => (
-                <Card key={order.id}>
-                  <CardContent className="space-y-6">
-                    <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2">
-                           <span className="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                             Đơn #{order.id}
-                           </span>
-                           <span className="text-[10px] text-slate-400 font-medium italic">
-                             Đặt ngày: {formatDate(order.createdAt)}
-                           </span>
-                        </div>
-                        <h3 className="text-lg font-black tracking-tight text-slate-900 mt-2 flex items-center gap-2">
-                          <Store className="h-4 w-4 text-primary" /> {order.shopName}
-                        </h3>
-                      </div>
-                      <div className="flex flex-col items-start gap-2 md:items-end">
-                        <OrderStatusBadge status={order.status} />
-                        <div className="text-right">
-                           <p className="text-xs text-slate-400">Tổng cộng</p>
-                           <p className="font-black text-primary text-lg tracking-tighter">
-                             {formatPrice(order.totalAmount)}
-                           </p>
-                        </div>
-                      </div>
-                    </div>
-
-
-                    <div className="border-t border-[var(--border)] pt-4">
-                      <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                        Items
-                      </p>
-                      <div className="space-y-2.5">
-                        {order.items.map((item) => (
-                          <div
-                            key={`${order.id}-${item.productId}`}
-                            className="flex items-center justify-between gap-4 text-sm text-[var(--foreground)]"
-                          >
-                            <span>{item.productName}</span>
-                            <span className="text-[var(--muted)]">
-                              {item.quantity} x {formatPrice(item.unitPrice)}
-                            </span>
+            <div className="grid gap-8">
+              {orders.map((order) => {
+                const isEligibleForReview = order.status === "DELIVERED" || order.status === "COMPLETED";
+                
+                return (
+                  <Card key={order.id} className="group overflow-hidden rounded-[2rem] border-slate-50 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.06)]">
+                    <CardContent className="p-0">
+                      {/* Card Header */}
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-8 bg-slate-50/50 border-b border-slate-50">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                             <span className="text-[10px] bg-primary text-white font-black px-3 py-1 rounded-full uppercase tracking-widest shadow-md shadow-primary/20">
+                               #{order.id}
+                             </span>
+                             <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">
+                               Đặt ngày {formatDate(order.createdAt)}
+                             </span>
                           </div>
-                        ))}
+                          <h3 className="text-xl font-black tracking-tight text-slate-900 mt-3 flex items-center gap-2 group-hover:text-primary transition-colors">
+                            <Store className="h-5 w-5 text-primary/40" /> {order.shopName}
+                          </h3>
+                        </div>
+                        <div className="flex flex-col md:items-end gap-3">
+                          <OrderStatusBadge status={order.status} />
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
-                       <p className="text-xs text-slate-500">
-                          Gồm <b>{order.items.length}</b> mặt hàng
-                       </p>
-                       <Link
-                         href={`/orders/${order.id}`}
-                         className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white border border-slate-200 px-6 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
-                       >
-                         Xem chi tiết <ChevronRight className="h-4 w-4" />
-                       </Link>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      {/* Items List */}
+                      <div className="p-8 space-y-6">
+                        <div className="space-y-4">
+                          {order.items.map((item) => {
+                            const thumbnail = item.productImage 
+                              ? filesApi.getDownloadUrl(item.productImage.split('/').pop() || '')
+                              : null;
+
+                            return (
+                              <div
+                                key={`${order.id}-${item.productId}`}
+                                className="flex items-center gap-4 group/item"
+                              >
+                                <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-2xl bg-slate-100 border border-slate-50">
+                                   {thumbnail ? (
+                                      <img src={thumbnail} alt={item.productName} className="h-full w-full object-cover transition-transform duration-500 group-hover/item:scale-110" />
+                                   ) : (
+                                      <div className="flex h-full w-full items-center justify-center text-slate-300">
+                                         <ShoppingBag className="h-6 w-6" />
+                                      </div>
+                                   )}
+                                </div>
+                                
+                                <div className="flex-1 min-w-0">
+                                   <Link href={`/products/${item.productId}`} className="text-sm font-bold text-slate-800 hover:text-primary transition-colors line-clamp-1">
+                                      {item.productName}
+                                   </Link>
+                                   <p className="text-xs text-slate-400 font-medium">
+                                      {item.quantity} x {formatPrice(item.unitPrice)}
+                                   </p>
+                                </div>
+
+                                {isEligibleForReview && (
+                                   <Link 
+                                      href={`/products/${item.productId}#reviews`}
+                                      className="flex items-center gap-2 px-4 py-2 bg-amber-50 text-amber-600 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-amber-100 transition-all active:scale-95"
+                                   >
+                                      <Star className="h-3.5 w-3.5 fill-amber-500 text-amber-500" />
+                                      Đánh giá
+                                   </Link>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Card Footer */}
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-8 pt-0 mt-2">
+                         <div className="flex items-center gap-3">
+                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400">
+                               <Receipt className="h-5 w-5" />
+                            </div>
+                            <div>
+                               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest leading-none">Tổng thanh toán</p>
+                               <p className="text-2xl font-black text-primary tracking-tighter">
+                                 {formatPrice(order.totalAmount)}
+                               </p>
+                            </div>
+                         </div>
+
+                         <div className="flex items-center gap-3 w-full sm:w-auto">
+                            <Link
+                              href={`/orders/${order.id}`}
+                              className="flex-1 sm:flex-none h-12 inline-flex items-center justify-center gap-2 rounded-2xl bg-slate-900 px-8 text-[11px] font-black text-white uppercase tracking-widest shadow-xl shadow-slate-200 transition-all hover:bg-slate-800 active:scale-95"
+                            >
+                              Xem chi tiết <ExternalLink className="h-4 w-4" />
+                            </Link>
+                         </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>

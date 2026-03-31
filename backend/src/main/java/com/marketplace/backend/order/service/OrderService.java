@@ -31,13 +31,15 @@ public class OrderService {
     private final CartRepository cartRepository;
     private final UserRepository userRepository;
     private final ProductRepository productRepository;
+    private final com.marketplace.backend.comment.repository.CommentRepository commentRepository;
 
     public OrderService(OrderRepository orderRepository, CartRepository cartRepository, UserRepository userRepository,
-                        ProductRepository productRepository) {
+                        ProductRepository productRepository, com.marketplace.backend.comment.repository.CommentRepository commentRepository) {
         this.orderRepository = orderRepository;
         this.cartRepository = cartRepository;
         this.userRepository = userRepository;
         this.productRepository = productRepository;
+        this.commentRepository = commentRepository;
     }
 
     @Transactional
@@ -75,6 +77,7 @@ public class OrderService {
         for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
             product.setStock(product.getStock() - cartItem.getQuantity());
+            product.setSoldCount(product.getSoldCount() + cartItem.getQuantity());
             if (product.getStock() <= 0) {
                 product.setStatus(ProductStatus.SOLD);
             }
@@ -275,6 +278,7 @@ public class OrderService {
             for (OrderItem item : order.getItems()) {
                 Product product = item.getProduct();
                 product.setStock(product.getStock() + item.getQuantity());
+                product.setSoldCount(Math.max(0, product.getSoldCount() - item.getQuantity()));
                 if (product.getStatus() == ProductStatus.SOLD) {
                     product.setStatus(ProductStatus.ACTIVE);
                 }
@@ -292,6 +296,19 @@ public class OrderService {
     public List<OrderResponse> getAllOrders() {
         return orderRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getEligibleOrdersToReview(Long userId, Long productId) {
+        // Tìm các đơn hàng DELIVERED hoặc COMPLETED của User này chứa Product này
+        List<Order> orders = orderRepository.findAllByUserIdAndStatusAndItemsProductId(userId, OrderStatus.DELIVERED, productId);
+        orders.addAll(orderRepository.findAllByUserIdAndStatusAndItemsProductId(userId, OrderStatus.COMPLETED, productId));
+
+        // Lọc ra các đơn chưa có comment/review nào linked (mỗi đơn hàng chỉ được đánh giá 1 lần)
+        return orders.stream()
+                .filter(o -> !commentRepository.existsByOrderId(o.getId()))
                 .map(this::toResponse)
                 .toList();
     }

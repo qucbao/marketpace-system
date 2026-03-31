@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Clock, MapPin, ShieldCheck, ShoppingCart, Image as ImageIcon, Trash2, Store } from "lucide-react";
+import { Clock, MapPin, ShieldCheck, ShoppingCart, Image as ImageIcon, Trash2, Store, Star } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
@@ -151,17 +151,35 @@ export function ProductCard({ product, category, onRemove }: ProductCardProps) {
               </Button>
             </div>
 
-            <div className="mt-6 flex items-center gap-2 text-[11px] font-bold text-slate-400">
-               <Store className="h-3.5 w-3.5 text-primary/50" />
-               <span className="truncate max-w-[100px]">{product.shopName}</span>
-               <span className="h-1 w-1 rounded-full bg-slate-200" />
-               <Clock className="h-3.5 w-3.5" />
-               <span className="whitespace-nowrap">
-                 {formatDistanceToNow(new Date(product.createdAt), {
-                   addSuffix: true,
-                   locale: vi,
-                 })}
-               </span>
+            <div className="mt-6 flex flex-col gap-3 border-t border-slate-50 pt-4">
+               <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-1.5 overflow-hidden">
+                     <Store className="h-3 w-3 text-primary/40 shrink-0" />
+                     <span className="truncate text-[10px] font-bold text-slate-400">{product.shopName}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-1 px-1.5 py-0.5 bg-amber-50 rounded-md border border-amber-100/50 shrink-0">
+                     <Star className="h-2.5 w-2.5 text-amber-500 fill-amber-500" />
+                     <span className="text-[9px] font-black text-amber-700">
+                        {product.averageRating > 0 ? product.averageRating.toFixed(1) : "5.0"}
+                     </span>
+                  </div>
+               </div>
+
+               <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-slate-400">
+                     Đã bán {product.soldCount || 0}
+                  </span>
+                  <div className="flex items-center gap-1 text-[9px] font-bold text-slate-300">
+                     <Clock className="h-2.5 w-2.5" />
+                     <span>
+                        {formatDistanceToNow(new Date(product.createdAt), {
+                           addSuffix: true,
+                           locale: vi,
+                        })}
+                     </span>
+                  </div>
+               </div>
             </div>
           </CardContent>
         </Card>

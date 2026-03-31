@@ -169,7 +169,9 @@ public class ProductService {
                 product.getShop().getOwner().getFullName(),
                 product.getCreatedAt(),
                 product.getUpdatedAt(),
-                imageUrls
+                imageUrls,
+                product.getAverageRating(),
+                product.getSoldCount()
         );
     }
 }

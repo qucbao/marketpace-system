@@ -42,6 +42,14 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.ok("Orders retrieved successfully", response));
     }
 
+    @GetMapping("/eligible-to-review")
+    public ResponseEntity<ApiResponse<List<OrderResponse>>> getEligibleOrdersToReview(
+            @org.springframework.web.bind.annotation.RequestParam Long productId,
+            HttpServletRequest httpServletRequest) {
+        List<OrderResponse> response = orderService.getEligibleOrdersToReview(resolveUserId(httpServletRequest), productId);
+        return ResponseEntity.ok(ApiResponse.ok("Eligible orders retrieved successfully", response));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<OrderResponse>> getOrderById(@PathVariable Long id) {
         OrderResponse response = orderService.getOrderById(id);

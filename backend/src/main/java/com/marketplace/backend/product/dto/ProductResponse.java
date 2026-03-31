@@ -24,13 +24,16 @@ public class ProductResponse {
     private Instant createdAt;
     private Instant updatedAt;
     private List<String> imageUrls;
+    private Double averageRating;
+    private Integer soldCount;
 
     public ProductResponse() {
     }
 
     public ProductResponse(Long id, String name, String description, String condition, BigDecimal price, Integer stock,
                            ProductStatus status, Long shopId, String shopName, Long categoryId, String categoryName,
-                           Long ownerId, String ownerName, Instant createdAt, Instant updatedAt, List<String> imageUrls) {
+                           Long ownerId, String ownerName, Instant createdAt, Instant updatedAt, List<String> imageUrls,
+                           Double averageRating, Integer soldCount) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -47,6 +50,8 @@ public class ProductResponse {
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.imageUrls = imageUrls;
+        this.averageRating = averageRating;
+        this.soldCount = soldCount;
     }
 
     public Long getId() {
@@ -175,5 +180,21 @@ public class ProductResponse {
 
     public void setImageUrls(List<String> imageUrls) {
         this.imageUrls = imageUrls;
+    }
+
+    public Double getAverageRating() {
+        return averageRating;
+    }
+
+    public void setAverageRating(Double averageRating) {
+        this.averageRating = averageRating;
+    }
+
+    public Integer getSoldCount() {
+        return soldCount;
+    }
+
+    public void setSoldCount(Integer soldCount) {
+        this.soldCount = soldCount;
     }
 }

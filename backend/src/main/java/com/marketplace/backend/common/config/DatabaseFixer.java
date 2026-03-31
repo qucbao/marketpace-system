@@ -29,6 +29,14 @@ public class DatabaseFixer implements CommandLineRunner {
             // Thêm các cột mới cho Shop
             jdbcTemplate.execute("ALTER TABLE shops ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(255)");
             jdbcTemplate.execute("ALTER TABLE shops ADD COLUMN IF NOT EXISTS address VARCHAR(255)");
+
+            // Cập nhật cho phần Review/Rating
+            jdbcTemplate.execute("ALTER TABLE comments ADD COLUMN IF NOT EXISTS rating INTEGER DEFAULT 5");
+            jdbcTemplate.execute("ALTER TABLE comments ADD COLUMN IF NOT EXISTS image_urls VARCHAR(1000)");
+            jdbcTemplate.execute("ALTER TABLE comments ADD COLUMN IF NOT EXISTS order_id BIGINT");
+
+            jdbcTemplate.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS average_rating DOUBLE PRECISION DEFAULT 0.0");
+            jdbcTemplate.execute("ALTER TABLE products ADD COLUMN IF NOT EXISTS sold_count INTEGER DEFAULT 0");
             
             // Xóa ràng buộc cũ của Shops (để hỗ trợ trạng thái LOCKED mới)
             jdbcTemplate.execute("ALTER TABLE shops DROP CONSTRAINT IF EXISTS shops_status_check");

@@ -36,6 +36,15 @@ public class Comment {
     @Column(nullable = false)
     private Instant createdAt;
 
+    @Column(name = "rating")
+    private Integer rating = 5;
+
+    @Column(name = "image_urls", length = 1000)
+    private String imageUrls;
+
+    @Column(name = "order_id")
+    private Long orderId;
+
     public Comment() {
     }
 
@@ -77,5 +86,29 @@ public class Comment {
 
     public void setCreatedAt(Instant createdAt) {
         this.createdAt = createdAt;
+    }
+
+    public Integer getRating() {
+        return rating;
+    }
+
+    public void setRating(Integer rating) {
+        this.rating = rating;
+    }
+
+    public String getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(String imageUrls) {
+        this.imageUrls = imageUrls;
+    }
+
+    public Long getOrderId() {
+        return orderId;
+    }
+
+    public void setOrderId(Long orderId) {
+        this.orderId = orderId;
     }
 }
