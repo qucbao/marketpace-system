@@ -10,6 +10,8 @@ export interface ShopResponse {
   id: number;
   name: string;
   description: string;
+  avatarUrl?: string;
+  address?: string;
   ownerId: number;
   ownerName: string;
   status: ShopStatus;

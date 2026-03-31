@@ -43,6 +43,12 @@ public class Shop {
     @Column(nullable = false)
     private Instant updatedAt;
 
+    @Column(length = 255)
+    private String avatarUrl;
+
+    @Column(length = 255)
+    private String address;
+
     public Shop() {
     }
 
@@ -100,5 +106,21 @@ public class Shop {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 }

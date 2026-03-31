@@ -134,9 +134,9 @@ public class OrderService {
 
     private OrderStatus determineStatus(CheckoutType checkoutType) {
         if (checkoutType == CheckoutType.DELIVERY) {
-            return OrderStatus.PAID_DEPOSIT;
+            return OrderStatus.PENDING;
         }
-        return OrderStatus.COMPLETED;
+        return OrderStatus.PAID_DEPOSIT; // Pickup don't need deposit, so mark as "deposit paid"
     }
 
     private OrderItem createOrderItem(Order order, CartItem cartItem) {
@@ -168,11 +168,14 @@ public class OrderService {
                 .map(item -> new OrderResponse.OrderItemSummary(
                         item.getProduct().getId(),
                         item.getProduct().getName(),
+                        item.getProduct().getImages().isEmpty() ? null : item.getProduct().getImages().get(0).getImageUrl(),
                         item.getQuantity(),
                         item.getUnitPrice(),
                         item.getLineTotal()
                 ))
                 .toList();
+
+        User seller = (order.getShop() != null) ? order.getShop().getOwner() : null;
 
         return new OrderResponse(
                 order.getId(),
@@ -184,7 +187,13 @@ public class OrderService {
                 order.getTotalAmount(),
                 order.getDepositAmount(),
                 order.getCreatedAt(),
-                items
+                items,
+                order.getDepositBillUrl(),
+                order.getEscrowHoldAt(),
+                seller != null ? seller.getFullName() : "Unknown",
+                seller != null ? seller.getBankAccount() : null,
+                seller != null ? seller.getBankName() : null,
+                order.getUser().getFullName()
         );
     }
 
@@ -197,6 +206,58 @@ public class OrderService {
     }
 
     @Transactional
+    public OrderResponse submitDepositBill(Long orderId, Long userId, String billUrl) {
+        Order order = getOrderEntity(orderId);
+        if (!order.getUser().getId().equals(userId)) {
+            throw new IllegalArgumentException("You don't own this order");
+        }
+        if (order.getStatus() != OrderStatus.PENDING && order.getStatus() != OrderStatus.DEPOSIT_SUBMITTED) {
+            throw new IllegalStateException("Đơn hàng đang ở trạng thái không thể nộp bill: " + order.getStatus());
+        }
+        
+        order.setDepositBillUrl(billUrl);
+        order.setStatus(OrderStatus.DEPOSIT_SUBMITTED);
+        return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse approveDeposit(Long orderId) {
+        Order order = getOrderEntity(orderId);
+        if (order.getStatus() != OrderStatus.DEPOSIT_SUBMITTED) {
+            throw new IllegalStateException("Order has no deposit bill submitted");
+        }
+        
+        order.setStatus(OrderStatus.PAID_DEPOSIT);
+        return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse confirmDelivery(Long orderId, Long userId) {
+        Order order = getOrderEntity(orderId);
+        // Buyer or Admin can confirm delivery
+        // Check if user is buyer or admin (simplified for now as userId check)
+        
+        if (order.getStatus() != OrderStatus.DELIVERED && order.getStatus() != OrderStatus.SHIPPING) {
+            throw new IllegalStateException("Order cannot be confirmed yet");
+        }
+
+        order.setStatus(OrderStatus.ESCROW_HOLDING);
+        order.setEscrowHoldAt(Instant.now());
+        return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
+    public OrderResponse releaseEscrow(Long orderId) {
+        Order order = getOrderEntity(orderId);
+        if (order.getStatus() != OrderStatus.ESCROW_HOLDING) {
+            throw new IllegalStateException("Order is not in ESCROW_HOLDING status");
+        }
+        
+        order.setStatus(OrderStatus.COMPLETED);
+        return toResponse(orderRepository.save(order));
+    }
+
+    @Transactional
     public OrderResponse updateSellerOrderStatus(Long orderId, Long shopId, OrderStatus newStatus) {
         Order order = getOrderEntity(orderId);
         
@@ -204,12 +265,16 @@ public class OrderService {
             throw new IllegalArgumentException("Seller cannot update orders from other shops");
         }
 
+        // Seller only allowed to set PREPARING, SHIPPING
+        if (newStatus != OrderStatus.PREPARING && newStatus != OrderStatus.SHIPPING && newStatus != OrderStatus.CANCELLED) {
+             throw new IllegalArgumentException("Invalid status update for seller. Only PREPARING or SHIPPING allowed.");
+        }
+
         // Nếu trạng thái mới là CANCELLED, hoàn lại hàng về tồn kho
         if (newStatus == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {
             for (OrderItem item : order.getItems()) {
                 Product product = item.getProduct();
                 product.setStock(product.getStock() + item.getQuantity());
-                // Nếu trước đó hết hàng (SOLD), giờ có lại thì set ACTIVE
                 if (product.getStatus() == ProductStatus.SOLD) {
                     product.setStatus(ProductStatus.ACTIVE);
                 }
@@ -221,5 +286,21 @@ public class OrderService {
         order.setStatus(newStatus);
         Order updatedOrder = orderRepository.save(order);
         return toResponse(updatedOrder);
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getAllOrders() {
+        return orderRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public OrderResponse adminUpdateOrderStatus(Long orderId, String statusName) {
+        Order order = getOrderEntity(orderId);
+        OrderStatus status = OrderStatus.valueOf(statusName);
+        order.setStatus(status);
+        return toResponse(orderRepository.save(order));
     }
 }

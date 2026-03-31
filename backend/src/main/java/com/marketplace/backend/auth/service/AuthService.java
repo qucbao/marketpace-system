@@ -60,6 +60,11 @@ public class AuthService {
             throw new IllegalArgumentException("Invalid email or password");
         }
 
+        if (user.isLocked()) {
+            String reason = user.getLockReason() != null ? ": " + user.getLockReason() : "";
+            throw new IllegalStateException("Your account has been locked" + reason);
+        }
+
         String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole().name());
         return new AuthResponse(user.getId(), user.getFullName(), user.getEmail(), user.getRole(), token);
     }

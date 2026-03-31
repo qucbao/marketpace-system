@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Clock, Receipt, ShoppingBag, Store, ChevronRight } from "lucide-react";
 
 import {
   AppShell,
@@ -38,9 +39,9 @@ export function OrderHistoryContent() {
     <AppShell>
       <PageContainer className="px-0 lg:px-0">
         <SectionHeader
-          eyebrow="Orders"
-          title="Order history"
-          description="Review previous checkouts, current order status, and item summaries."
+          eyebrow="Giao dịch"
+          title="Lịch sử mua hàng"
+          description="Xem lại trạng thái đơn hàng và chi tiết các lần mua sắm trước đây của bạn."
         />
 
         <div className="mt-10 grid gap-6">
@@ -65,25 +66,30 @@ export function OrderHistoryContent() {
                 <Card key={order.id}>
                   <CardContent className="space-y-6">
                     <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                      <div className="space-y-2.5">
-                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-                          Order #{order.id}
-                        </p>
-                        <h3 className="text-xl font-semibold tracking-tight text-[var(--foreground)]">
-                          {order.shopName}
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                           <span className="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                             Đơn #{order.id}
+                           </span>
+                           <span className="text-[10px] text-slate-400 font-medium italic">
+                             Đặt ngày: {formatDate(order.createdAt)}
+                           </span>
+                        </div>
+                        <h3 className="text-lg font-black tracking-tight text-slate-900 mt-2 flex items-center gap-2">
+                          <Store className="h-4 w-4 text-primary" /> {order.shopName}
                         </h3>
-                        <p className="text-sm text-[var(--muted)]">
-                          {formatDate(order.createdAt)}
-                        </p>
                       </div>
-                      <div className="flex flex-col items-start gap-3 md:items-end">
+                      <div className="flex flex-col items-start gap-2 md:items-end">
                         <OrderStatusBadge status={order.status} />
-                        <div className="text-sm text-[var(--muted)]">
-                          <p>Total: {formatPrice(order.totalAmount)}</p>
-                          <p>Deposit: {formatPrice(order.depositAmount)}</p>
+                        <div className="text-right">
+                           <p className="text-xs text-slate-400">Tổng cộng</p>
+                           <p className="font-black text-primary text-lg tracking-tighter">
+                             {formatPrice(order.totalAmount)}
+                           </p>
                         </div>
                       </div>
                     </div>
+
 
                     <div className="border-t border-[var(--border)] pt-4">
                       <p className="mb-3 text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -104,12 +110,17 @@ export function OrderHistoryContent() {
                       </div>
                     </div>
 
-                    <Link
-                      href={`/orders/${order.id}`}
-                      className="inline-flex h-10 items-center justify-center border border-[var(--border)] bg-white px-4 text-sm font-medium text-[var(--foreground)] transition-colors hover:bg-muted/50"
-                    >
-                      View details
-                    </Link>
+                    <div className="flex justify-between items-center bg-slate-50 p-4 rounded-xl">
+                       <p className="text-xs text-slate-500">
+                          Gồm <b>{order.items.length}</b> mặt hàng
+                       </p>
+                       <Link
+                         href={`/orders/${order.id}`}
+                         className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-white border border-slate-200 px-6 text-sm font-bold text-slate-700 shadow-sm transition-all hover:bg-slate-100 hover:border-slate-300 active:scale-[0.98]"
+                       >
+                         Xem chi tiết <ChevronRight className="h-4 w-4" />
+                       </Link>
+                    </div>
                   </CardContent>
                 </Card>
               ))}

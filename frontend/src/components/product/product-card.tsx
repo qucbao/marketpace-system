@@ -3,11 +3,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Clock, MapPin, ShieldCheck, ShoppingCart, Image as ImageIcon } from "lucide-react";
+import { Clock, MapPin, ShieldCheck, ShoppingCart, Image as ImageIcon, Trash2, Store } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
 import { Badge, Button, Card, CardContent } from "@/components/ui";
+import { FavoriteButton } from "@/components/product/favorite-button";
 import { useCart } from "@/hooks/use-cart";
 import { filesApi } from "@/lib/api/files";
 import type { CategoryResponse, ProductResponse, ProductStatus } from "@/types";
@@ -15,6 +16,7 @@ import type { CategoryResponse, ProductResponse, ProductStatus } from "@/types";
 interface ProductCardProps {
   product: ProductResponse;
   category?: CategoryResponse;
+  onRemove?: () => void;
 }
 
 const STATUS_MAP: Record<
@@ -33,7 +35,7 @@ function formatVND(price: number) {
   }).format(price);
 }
 
-export function ProductCard({ product, category }: ProductCardProps) {
+export function ProductCard({ product, category, onRemove }: ProductCardProps) {
   const { addItem } = useCart();
   const [adding, setAdding] = useState(false);
   const categoryName = category?.name ?? product.categoryName;
@@ -66,10 +68,10 @@ export function ProductCard({ product, category }: ProductCardProps) {
     <div className="group relative h-full">
       <Link
         href={`/products/${product.id}`}
-        className="block h-full rounded-2xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+        className="block h-full rounded-[2rem] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
       >
-        <Card className="h-full overflow-hidden border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5">
-          <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
+        <Card className="h-full overflow-hidden border-slate-50 bg-white shadow-[0_8px_30px_rgb(0,0,0,0.04)] transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.08)] rounded-[2rem]">
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-slate-50">
             {mainImage ? (
               <Image
                 src={mainImage}
@@ -84,38 +86,58 @@ export function ProductCard({ product, category }: ProductCardProps) {
               </div>
             )}
 
-            <div className="absolute left-3 top-3">
-              <Badge variant={statusInfo.variant} className="shadow-sm backdrop-blur-md">
+            <div className="absolute left-4 top-4 flex flex-col gap-2">
+              <Badge variant={statusInfo.variant} className="shadow-lg backdrop-blur-md px-3 py-1 font-black text-[10px] uppercase tracking-widest border-none">
                 {statusInfo.label}
               </Badge>
+              {onRemove && (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onRemove();
+                  }}
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-red-500 text-white shadow-xl shadow-red-500/20 transition-all hover:bg-red-600 active:scale-90"
+                  title="Xóa khỏi yêu thích"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
             </div>
 
-            <div className="absolute right-3 bottom-3">
-              <span className="rounded-md bg-black/50 px-2 py-1 text-[10px] font-bold text-white backdrop-blur-sm">
+            <div className="absolute right-3 top-3 z-10 translate-x-12 opacity-0 transition-all duration-500 group-hover:translate-x-0 group-hover:opacity-100">
+              <FavoriteButton productId={product.id} />
+            </div>
+
+            <div className="absolute right-4 bottom-4">
+              <span className="rounded-xl bg-slate-900/80 px-3 py-1.5 text-[9px] font-black text-white backdrop-blur-md uppercase tracking-widest">
                 {product.condition === "USED" ? "Đồ cũ" : "Mới"}
               </span>
             </div>
           </div>
 
-          <CardContent className="p-4">
-            <div className="mb-1 flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-              <ShieldCheck className="h-3 w-3" />
+          <CardContent className="p-6 flex flex-col flex-1">
+            <div className="mb-2 flex items-center gap-1 text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
+              <ShieldCheck className="h-3.5 w-3.5" />
               {categoryName}
             </div>
 
-            <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-tight text-foreground transition-colors group-hover:text-primary">
+            <h3 className="line-clamp-2 min-h-[3rem] text-base font-black leading-tight text-slate-800 transition-colors group-hover:text-primary tracking-tight">
               {product.name}
             </h3>
 
-            <div className="mt-4 flex items-start justify-between gap-3">
-              <p className="text-xl font-extrabold text-accent">
-                {formatVND(product.price)}
-              </p>
+            <div className="mt-auto pt-6 flex items-end justify-between border-t border-slate-50">
+              <div className="space-y-1">
+                 <p className="text-[10px] font-bold text-slate-400 leading-none uppercase tracking-widest">Giá thanh lý</p>
+                 <p className="text-xl font-black text-slate-900 tracking-tighter">
+                   {formatVND(product.price)}
+                 </p>
+              </div>
 
               <Button
                 size="icon"
-                variant="outline"
-                className="h-9 w-9 rounded-full border-dashed text-muted-foreground hover:border-primary/40 hover:text-primary"
+                variant="ghost"
+                className="h-11 w-11 rounded-2xl bg-slate-50 text-slate-400 transition-all hover:bg-primary hover:text-white"
                 disabled={product.status !== "ACTIVE"}
                 isLoading={adding}
                 onClick={handleAddToCart}
@@ -125,27 +147,21 @@ export function ProductCard({ product, category }: ProductCardProps) {
                     : "This product is not available for cart actions"
                 }
               >
-                <ShoppingCart className="h-4 w-4" />
+                <ShoppingCart className="h-5 w-5" />
               </Button>
             </div>
 
-            <div className="mt-4 flex flex-col gap-1.5 border-t border-border pt-3 text-[11px] text-muted-foreground">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1 truncate font-medium">
-                  <MapPin className="h-3.5 w-3.5 shrink-0 text-primary" />
-                  <span className="truncate">{product.shopName}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5 shrink-0" />
-                <span>
-                  {formatDistanceToNow(new Date(product.createdAt), {
-                    addSuffix: true,
-                    locale: vi,
-                  })}
-                </span>
-              </div>
+            <div className="mt-6 flex items-center gap-2 text-[11px] font-bold text-slate-400">
+               <Store className="h-3.5 w-3.5 text-primary/50" />
+               <span className="truncate max-w-[100px]">{product.shopName}</span>
+               <span className="h-1 w-1 rounded-full bg-slate-200" />
+               <Clock className="h-3.5 w-3.5" />
+               <span className="whitespace-nowrap">
+                 {formatDistanceToNow(new Date(product.createdAt), {
+                   addSuffix: true,
+                   locale: vi,
+                 })}
+               </span>
             </div>
           </CardContent>
         </Card>

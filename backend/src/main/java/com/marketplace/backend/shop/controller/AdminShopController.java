@@ -1,18 +1,16 @@
 package com.marketplace.backend.shop.controller;
 
 import com.marketplace.backend.common.response.ApiResponse;
+import com.marketplace.backend.shop.dto.AdminShopDetailResponse;
 import com.marketplace.backend.shop.dto.ShopResponse;
 import com.marketplace.backend.shop.service.ShopService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @CrossOrigin("*")
-
 @RequestMapping("/api/admin/shops")
 public class AdminShopController {
 
@@ -22,8 +20,13 @@ public class AdminShopController {
         this.shopService = shopService;
     }
 
-    @org.springframework.web.bind.annotation.GetMapping("/pending")
-    public ResponseEntity<ApiResponse<java.util.List<ShopResponse>>> getPendingShops() {
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<AdminShopDetailResponse>>> getAllShops() {
+        return ResponseEntity.ok(ApiResponse.ok("All shops retrieved successfully", shopService.getAllShopsDetail()));
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<ApiResponse<List<ShopResponse>>> getPendingShops() {
         return ResponseEntity.ok(ApiResponse.ok("Pending shops retrieved successfully", shopService.getPendingShops()));
     }
 

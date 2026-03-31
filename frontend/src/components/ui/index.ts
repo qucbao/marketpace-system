@@ -11,3 +11,5 @@ export * from "./page-container";
 export * from "./section-header";
 export * from "./select";
 export * from "./textarea";
+export * from "./label";
+export * from "./tabs";

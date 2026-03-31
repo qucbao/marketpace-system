@@ -57,6 +57,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
 
+    private String depositBillUrl;
+
+    private Instant escrowHoldAt;
+
     public Order() {
     }
 
@@ -130,5 +134,21 @@ public class Order {
 
     public void setItems(List<OrderItem> items) {
         this.items = items;
+    }
+
+    public String getDepositBillUrl() {
+        return depositBillUrl;
+    }
+
+    public void setDepositBillUrl(String depositBillUrl) {
+        this.depositBillUrl = depositBillUrl;
+    }
+
+    public Instant getEscrowHoldAt() {
+        return escrowHoldAt;
+    }
+
+    public void setEscrowHoldAt(Instant escrowHoldAt) {
+        this.escrowHoldAt = escrowHoldAt;
     }
 }

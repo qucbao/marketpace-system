@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Store, Users, ShoppingBag, Tags } from "lucide-react";
+import { LayoutDashboard, Store, Users, ShoppingBag, Tags, Receipt, ShieldCheck } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 
@@ -23,9 +23,14 @@ const sidebarLinks = [
     icon: <Tags className="h-5 w-5" />,
   },
   {
-    title: "Quản lý sản phẩm",
-    href: "/admin/products",
-    icon: <ShoppingBag className="h-5 w-5" />,
+    title: "Giao dịch cọc",
+    href: "/admin/orders",
+    icon: <Receipt className="h-5 w-5" />,
+  },
+  {
+    title: "Quản lý Giam tiền",
+    href: "/admin/escrow",
+    icon: <ShieldCheck className="h-5 w-5" />,
   },
   {
     title: "Quản lý người dùng",

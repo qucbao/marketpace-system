@@ -8,6 +8,7 @@ import {
   Shield,
   User,
   Store,
+  Receipt,
 } from "lucide-react";
 
 import type { AuthResponse } from "@/types";
@@ -45,6 +46,11 @@ function buildMenuItems(logout: () => void): MenuItem[] {
       href: "/seller",
       icon: <Store className="h-4 w-4" />,
       roles: ["SELLER"],
+    },
+    {
+      label: "Đơn hàng của tôi",
+      href: "/orders",
+      icon: <Receipt className="h-4 w-4" />,
     },
     {
       label: "Đăng xuất",

@@ -4,12 +4,12 @@ import { LoginForm } from "@/components/auth/login-form";
 export default function LoginPage() {
   return (
     <AuthCardShell
-      eyebrow="Authentication"
-      title="Sign in"
-      description="Use your existing marketplace account credentials to continue."
-      footerText="Need an account?"
+      eyebrow="Chào mừng trở lại"
+      title="Đăng nhập"
+      description="Sử dụng tài khoản REUSE Hub của bạn để tiếp tục khám phá kho đồ cũ chất lượng."
+      footerText="Chưa có tài khoản?"
       footerLinkHref="/register"
-      footerLinkLabel="Create one"
+      footerLinkLabel="Đăng ký ngay"
     >
       <LoginForm />
     </AuthCardShell>

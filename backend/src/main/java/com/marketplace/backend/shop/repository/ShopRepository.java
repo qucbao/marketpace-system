@@ -8,4 +8,5 @@ import org.springframework.stereotype.Repository;
 public interface ShopRepository extends JpaRepository<Shop, Long> {
     boolean existsByOwnerId(Long ownerId);
     java.util.List<Shop> findByStatus(com.marketplace.backend.shop.entity.ShopStatus status);
+    java.util.Optional<Shop> findByOwnerId(Long ownerId);
 }

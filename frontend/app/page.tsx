@@ -12,6 +12,8 @@ import {
 import { productsApi } from "@/lib/api";
 import { ProductResponse } from "@/types";
 
+import { HomeBanner } from "@/components/home/home-banner";
+
 export default async function Home() {
   let products: ProductResponse[] = [];
   let error = null;
@@ -27,24 +29,7 @@ export default async function Home() {
   return (
     <AppShell>
       <PageContainer className="py-8">
-        <div className="mb-10 rounded-2xl bg-gradient-to-r from-primary to-teal-600 p-8 text-white shadow-lg md:p-12">
-          <div className="max-w-2xl">
-            <h1 className="text-3xl font-bold leading-tight md:text-5xl">
-              Săn đồ cũ giá hời,
-              <br />
-              chất lượng mới 99%
-            </h1>
-            <p className="mt-4 text-sm opacity-90 md:text-lg">
-              Cộng đồng mua bán đồ cũ uy tín nhất hiện nay.
-            </p>
-            <Link
-              href="/shops/register"
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 font-bold text-primary transition-all hover:bg-gray-100"
-            >
-              <PlusCircle className="h-5 w-5" /> Mở shop ngay
-            </Link>
-          </div>
-        </div>
+        <HomeBanner />
 
         <SectionHeader
           title="Sản phẩm mới nhất"

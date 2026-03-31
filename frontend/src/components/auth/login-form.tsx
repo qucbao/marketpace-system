@@ -73,8 +73,8 @@ export function LoginForm() {
       toast.success(`Welcome back, ${payload.data.fullName}!`);
       router.push("/");
       router.refresh();
-    } catch {
-      const message = "Login failed. Please check your credentials.";
+    } catch (error: any) {
+      const message = error.message || "Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.";
       setApiError(message);
       toast.error(message);
     } finally {
@@ -93,10 +93,11 @@ export function LoginForm() {
           value={values.email}
           onChange={(event) => updateField("email", event.target.value)}
           aria-invalid={Boolean(errors.email)}
-          placeholder="you@example.com"
+          placeholder="email@example.com"
           disabled={loading}
+          className="h-12 border-slate-200 focus:ring-primary shadow-sm rounded-xl"
         />
-        {errors.email ? <FormMessage className="text-red-500">{errors.email}</FormMessage> : null}
+        {errors.email ? <FormMessage className="text-red-500 text-xs font-semibold mt-1">{errors.email}</FormMessage> : null}
       </FormField>
 
       <FormField>
@@ -115,13 +116,14 @@ export function LoginForm() {
       </FormField>
 
       {apiError ? (
-        <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+        <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 font-bold animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm flex items-center gap-2">
+          <div className="h-1.5 w-1.5 rounded-full bg-red-600 animate-pulse"></div>
           {apiError}
         </div>
       ) : null}
 
-      <Button type="submit" className="h-11 w-full" isLoading={loading}>
-        Sign in
+      <Button type="submit" className="h-12 w-full rounded-xl font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95" isLoading={loading}>
+        Đăng nhập ngay
       </Button>
     </form>
   );

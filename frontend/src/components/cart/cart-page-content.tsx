@@ -7,7 +7,7 @@ import { Minus, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 import { useCart } from "@/hooks/use-cart";
-import { cartApi } from "@/lib/api";
+import { cartApi, filesApi } from "@/lib/api";
 import {
   AppShell,
   Card,
@@ -47,7 +47,7 @@ export function CartPageContent() {
       await cartApi.add({ productId, quantity: newQuantity === 1 ? 1 : -1 });
       await refreshCart(true, true);
     } catch {
-      toast.error("KhĂ´ng thá»ƒ cáº­p nháº­t sá»‘ lÆ°á»£ng");
+      toast.error("Không thể cập nhật số lượng");
     } finally {
       setActionLoading(null);
     }
@@ -57,9 +57,9 @@ export function CartPageContent() {
     setActionLoading(itemId);
     try {
       await removeItem(itemId);
-      toast.success("ÄĂ£ xĂ³a sáº£n pháº©m");
+      toast.success("Đã xóa sản phẩm");
     } catch {
-      toast.error("Lá»—i khi xĂ³a sáº£n pháº©m");
+      toast.error("Lỗi khi xóa sản phẩm");
     } finally {
       setActionLoading(null);
     }
@@ -70,26 +70,26 @@ export function CartPageContent() {
       <PageContainer>
         <SectionHeader
           eyebrow="Shopping Cart"
-          title="Giá» hĂ ng cá»§a báº¡n"
-          description={`Báº¡n cĂ³ ${items.length} sáº£n pháº©m trong giá» hĂ ng.`}
+          title="Giỏ hàng của bạn"
+          description={`Bạn có ${items.length} sản phẩm trong giỏ hàng.`}
         />
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_380px]">
           <div className="space-y-4">
             {loading ? (
               <LoadingState
-                title="Äang táº£i giá» hĂ ng"
-                description="Vui lĂ²ng chá» trong giĂ¢y lĂ¡t."
+                title="Đang tải giỏ hàng"
+                description="Vui lòng chờ trong giây lát."
               />
             ) : errorMessage ? (
               <ErrorState
-                title="KhĂ´ng thá»ƒ táº£i giá» hĂ ng"
+                title="Không thể tải giỏ hàng"
                 description={errorMessage}
               />
             ) : items.length === 0 ? (
               <EmptyState
-                title="Giá» hĂ ng trá»‘ng"
-                description="HĂ£y thĂªm vĂ i sáº£n pháº©m Ä‘á»ƒ báº¯t Ä‘áº§u thanh toĂ¡n."
+                title="Giỏ hàng trống"
+                description="Hãy thêm vài sản phẩm để bắt đầu thanh toán."
               />
             ) : (
               items.map((item) => (
@@ -98,7 +98,9 @@ export function CartPageContent() {
                     <div className="flex flex-col items-center gap-4 p-4 sm:flex-row">
                       <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
                         <Image
-                          src={`https://picsum.photos/seed/${item.productId}/200`}
+                          src={item.productImage 
+                            ? filesApi.getDownloadUrl(item.productImage.split('/').pop() || '') 
+                            : `https://picsum.photos/seed/${item.productId}/200`}
                           alt={item.productName}
                           width={96}
                           height={96}
@@ -146,7 +148,7 @@ export function CartPageContent() {
                           disabled={actionLoading === item.itemId}
                           aria-label={`Remove ${item.productName} from cart`}
                         >
-                          <Trash2 className="h-3 w-3" /> XĂ³a
+                          <Trash2 className="h-3 w-3" /> Xóa
                         </button>
                       </div>
                     </div>
@@ -159,25 +161,25 @@ export function CartPageContent() {
           <div className="space-y-6">
             <Card className="sticky top-24 border-primary/10 bg-card shadow-lg">
               <CardHeader>
-                <CardTitle>Tá»•ng Ä‘Æ¡n hĂ ng</CardTitle>
+                <CardTitle>Tổng đơn hàng</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Táº¡m tĂ­nh ({items.length} mĂ³n)</span>
+                  <span className="text-muted-foreground">Tạm tính ({items.length} món)</span>
                   <span>{formatVND(totalCartPrice)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">PhĂ­ váº­n chuyá»ƒn</span>
-                  <span className="font-medium text-green-600">Miá»…n phĂ­</span>
+                  <span className="text-muted-foreground">Phí vận chuyển</span>
+                  <span className="font-medium text-green-600">Miễn phí</span>
                 </div>
 
                 <div className="flex items-end justify-between border-t pt-4">
-                  <span className="font-bold">Tá»•ng cá»™ng</span>
+                  <span className="font-bold">Tổng cộng</span>
                   <div className="text-right">
                     <p className="text-2xl font-bold leading-none text-accent">
                       {formatVND(totalCartPrice)}
                     </p>
-                    <p className="mt-1 text-[10px] text-muted-foreground">(ÄĂ£ bao gá»“m VAT)</p>
+                    <p className="mt-1 text-[10px] text-muted-foreground">(Đã bao gồm VAT)</p>
                   </div>
                 </div>
 
@@ -189,7 +191,7 @@ export function CartPageContent() {
                       : "bg-accent text-white shadow-lg shadow-accent/20 hover:opacity-90"
                   }`}
                 >
-                  THANH TOĂN NGAY
+                  THANH TOÁN NGAY
                 </Link>
               </CardContent>
             </Card>

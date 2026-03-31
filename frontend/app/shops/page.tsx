@@ -1,15 +1,9 @@
 import Link from "next/link";
 import { ArrowRight, MapPin, Plus } from "lucide-react";
 
-import {
-  AppShell,
-  Button,
-  EmptyState,
-  ErrorState,
-  PageContainer,
-  SectionHeader,
-} from "@/components/ui";
+import { AppShell, Button, EmptyState, ErrorState, PageContainer, SectionHeader } from "@/components/ui";
 import { shopsApi } from "@/lib/api/shops";
+import { filesApi } from "@/lib/api/files";
 import { ShopResponse } from "@/types";
 
 export default async function ShopsPage() {
@@ -66,9 +60,15 @@ export default async function ShopsPage() {
                     {shop.status}
                   </div>
 
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-xl font-bold text-primary transition-colors group-hover:bg-primary group-hover:text-white">
-                      {shop.name ? shop.name.charAt(0).toUpperCase() : "S"}
+                   <div className="flex items-center gap-4">
+                    <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 overflow-hidden border border-slate-50 transition-colors group-hover:border-primary/30">
+                      {shop.avatarUrl ? (
+                        <img src={filesApi.getDownloadUrl(shop.avatarUrl)} alt={shop.name} className="h-full w-full object-cover transition-transform group-hover:scale-110" />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center bg-primary/10 text-xl font-bold text-primary">
+                          {shop.name ? shop.name.charAt(0).toUpperCase() : "S"}
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1 overflow-hidden pr-10">
                       <h3 className="truncate text-lg font-bold text-foreground group-hover:text-primary">

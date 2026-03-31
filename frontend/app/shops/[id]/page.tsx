@@ -4,6 +4,7 @@ import { ProductCard } from "@/components/product/product-card";
 import { AppShell, PageContainer, SectionHeader } from "@/components/ui";
 import { productsApi } from "@/lib/api";
 import { shopsApi } from "@/lib/api/shops";
+import { filesApi } from "@/lib/api/files";
 import { ProductResponse, ShopResponse } from "@/types";
 
 type ShopDetailPageProps = {
@@ -54,8 +55,14 @@ export default async function ShopDetailPage({ params }: ShopDetailPageProps) {
       <div className="border-b bg-muted/20">
         <PageContainer className="py-12">
           <div className="flex flex-col items-center gap-8 md:flex-row md:items-start">
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary to-teal-500 text-4xl font-black text-white shadow-xl">
-              {shop.name.charAt(0).toUpperCase()}
+            <div className="flex h-32 w-32 shrink-0 items-center justify-center rounded-[2.5rem] bg-white overflow-hidden border-4 border-white shadow-[0_20px_50px_rgba(0,0,0,0.1)] group">
+               {shop.avatarUrl ? (
+                 <img src={filesApi.getDownloadUrl(shop.avatarUrl)} alt={shop.name} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+               ) : (
+                 <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-primary to-teal-500 text-4xl font-black text-white">
+                   {shop.name.charAt(0).toUpperCase()}
+                 </div>
+               )}
             </div>
 
             <div className="flex-1 text-center md:text-left">

@@ -104,6 +104,11 @@ public class CartService {
         BigDecimal productPrice = cartItem.getProduct().getPrice();
         BigDecimal totalPrice = productPrice.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
 
+        String productImage = null;
+        if (cartItem.getProduct().getImages() != null && !cartItem.getProduct().getImages().isEmpty()) {
+            productImage = cartItem.getProduct().getImages().get(0).getImageUrl();
+        }
+
         return new CartResponse(
                 cartItem.getId(),
                 cartItem.getUser().getId(),
@@ -113,7 +118,8 @@ public class CartService {
                 cartItem.getQuantity(),
                 totalPrice,
                 cartItem.getCreatedAt(),
-                cartItem.getUpdatedAt()
+                cartItem.getUpdatedAt(),
+                productImage
         );
     }
 }

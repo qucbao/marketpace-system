@@ -9,6 +9,8 @@ public class ShopResponse {
     private Long id;
     private String name;
     private String description;
+    private String avatarUrl;
+    private String address;
     private Long ownerId;
     private String ownerName;
     private ShopStatus status;
@@ -18,11 +20,13 @@ public class ShopResponse {
     public ShopResponse() {
     }
 
-    public ShopResponse(Long id, String name, String description, Long ownerId, String ownerName, ShopStatus status,
+    public ShopResponse(Long id, String name, String description, String avatarUrl, String address, Long ownerId, String ownerName, ShopStatus status,
                         Instant createdAt, Instant updatedAt) {
         this.id = id;
         this.name = name;
         this.description = description;
+        this.avatarUrl = avatarUrl;
+        this.address = address;
         this.ownerId = ownerId;
         this.ownerName = ownerName;
         this.status = status;
@@ -52,6 +56,22 @@ public class ShopResponse {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getAvatarUrl() {
+        return avatarUrl;
+    }
+
+    public void setAvatarUrl(String avatarUrl) {
+        this.avatarUrl = avatarUrl;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
     }
 
     public Long getOwnerId() {

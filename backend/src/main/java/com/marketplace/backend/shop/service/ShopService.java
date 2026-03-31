@@ -1,7 +1,10 @@
 package com.marketplace.backend.shop.service;
 
+import com.marketplace.backend.product.repository.ProductRepository;
 import com.marketplace.backend.shop.dto.ShopRegisterRequest;
 import com.marketplace.backend.shop.dto.ShopResponse;
+import com.marketplace.backend.shop.dto.ShopUpdateRequest;
+import com.marketplace.backend.shop.dto.AdminShopDetailResponse;
 import com.marketplace.backend.shop.entity.Shop;
 import com.marketplace.backend.shop.entity.ShopStatus;
 import com.marketplace.backend.shop.repository.ShopRepository;
@@ -19,10 +22,12 @@ public class ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    private final ProductRepository productRepository;
 
-    public ShopService(ShopRepository shopRepository, UserRepository userRepository) {
+    public ShopService(ShopRepository shopRepository, UserRepository userRepository, ProductRepository productRepository) {
         this.shopRepository = shopRepository;
         this.userRepository = userRepository;
+        this.productRepository = productRepository;
     }
 
     @Transactional
@@ -95,6 +100,52 @@ public class ShopService {
         return getApprovedShops();
     }
 
+    @Transactional(readOnly = true)
+    public ShopResponse getByUserId(Long userId) {
+        return shopRepository.findByOwnerId(userId)
+                .map(this::toResponse)
+                .orElseThrow(() -> new IllegalArgumentException("Người dùng chưa có cửa hàng"));
+    }
+
+    @Transactional
+    public ShopResponse updateShop(Long userId, ShopUpdateRequest request) {
+        Shop shop = shopRepository.findByOwnerId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Cửa hàng không tồn tại"));
+        
+        shop.setName(request.getName().trim());
+        shop.setDescription(request.getDescription().trim());
+        shop.setAvatarUrl(request.getAvatarUrl());
+        shop.setAddress(request.getAddress());
+        shop.setUpdatedAt(Instant.now());
+        
+        return toResponse(shopRepository.save(shop));
+    }
+
+    @Transactional(readOnly = true)
+    public List<AdminShopDetailResponse> getAllShopsDetail() {
+        return shopRepository.findAll().stream()
+                .map(shop -> {
+                    AdminShopDetailResponse detail = new AdminShopDetailResponse(
+                        shop.getId(),
+                        shop.getName(),
+                        shop.getDescription(),
+                        shop.getAvatarUrl(),
+                        shop.getAddress(),
+                        shop.getOwner() != null ? shop.getOwner().getId() : 0,
+                        shop.getOwner() != null ? shop.getOwner().getFullName() : "Unknown",
+                        shop.getStatus(),
+                        shop.getCreatedAt(),
+                        shop.getUpdatedAt()
+                    );
+                    if (shop.getOwner() != null) {
+                        detail.setOwnerEmail(shop.getOwner().getEmail());
+                    }
+                    detail.setTotalProducts(productRepository.countByShopId(shop.getId()));
+                    return detail;
+                })
+                .collect(Collectors.toList());
+    }
+
     private Shop getShopEntity(Long id) {
         return shopRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Shop not found"));
@@ -105,8 +156,10 @@ public class ShopService {
                 shop.getId(),
                 shop.getName(),
                 shop.getDescription(),
-                shop.getOwner() != null ? shop.getOwner().getId() : 0, // Kiểm tra null
-                shop.getOwner() != null ? shop.getOwner().getFullName() : "Unknown", // Kiểm tra null
+                shop.getAvatarUrl(),
+                shop.getAddress(),
+                shop.getOwner() != null ? shop.getOwner().getId() : 0,
+                shop.getOwner() != null ? shop.getOwner().getFullName() : "Unknown",
                 shop.getStatus(),
                 shop.getCreatedAt(),
                 shop.getUpdatedAt());

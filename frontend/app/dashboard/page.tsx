@@ -14,6 +14,8 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [fullName, setFullName] = useState("");
+  const [bankAccount, setBankAccount] = useState("");
+  const [bankName, setBankName] = useState("");
 
   useEffect(() => {
     async function loadProfile() {
@@ -23,6 +25,8 @@ export default function ProfilePage() {
         if (res.success && res.data) {
           setProfile(res.data);
           setFullName(res.data.fullName);
+          setBankAccount(res.data.bankAccount || "");
+          setBankName(res.data.bankName || "");
         }
       } catch (error: any) {
         toast.error(error.message || "Không tải được thông tin");
@@ -39,7 +43,11 @@ export default function ProfilePage() {
 
     try {
       setSaving(true);
-      const res = await usersApi.updateProfile({ fullName });
+      const res = await usersApi.updateProfile({ 
+        fullName,
+        bankAccount: bankAccount.trim(),
+        bankName: bankName.trim()
+      });
       if (res.success && res.data) {
         setProfile(res.data);
         toast.success("Cập nhật thông tin thành công!");
@@ -134,6 +142,34 @@ export default function ProfilePage() {
                        />
                        <p className="text-xs text-muted-foreground pt-1">Email được bảo vệ mặc định bởi hệ thống.</p>
                     </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                      {/* Bank Name */}
+                      <div className="space-y-2">
+                        <label htmlFor="bankName" className="text-sm font-medium text-slate-700">Tên ngân hàng</label>
+                        <input
+                          type="text"
+                          id="bankName"
+                          placeholder="Ví dụ: Vietcombank"
+                          value={bankName}
+                          onChange={(e) => setBankName(e.target.value)}
+                          className="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+                        />
+                      </div>
+
+                      {/* Bank Account */}
+                      <div className="space-y-2">
+                        <label htmlFor="bankAccount" className="text-sm font-medium text-slate-700">Số tài khoản (STK)</label>
+                        <input
+                          type="text"
+                          id="bankAccount"
+                          placeholder="Nhập số tài khoản của bạn"
+                          value={bankAccount}
+                          onChange={(e) => setBankAccount(e.target.value)}
+                          className="flex h-11 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary shadow-sm"
+                        />
+                      </div>
+                    </div>
                     
                     {/* UID View*/}
                     <div className="block pt-2">
@@ -148,7 +184,7 @@ export default function ProfilePage() {
                <div className="bg-slate-50 px-6 py-4 border-t flex items-center justify-end">
                   <button
                     type="submit"
-                    disabled={saving || fullName === profile.fullName}
+                    disabled={saving || (fullName === profile.fullName && bankAccount === (profile.bankAccount || "") && bankName === (profile.bankName || ""))}
                     className="inline-flex items-center gap-2 rounded-lg bg-primary hover:bg-primary/90 text-white px-6 py-2.5 text-sm font-semibold transition-all shadow-sm focus:ring-4 focus:ring-primary/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? (

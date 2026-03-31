@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Store, ShoppingBag, Receipt, Wallet } from "lucide-react";
+import { Store, ShoppingBag, Receipt, Settings } from "lucide-react";
 
 import { cn } from "@/lib/cn";
 
@@ -23,9 +23,9 @@ const sidebarLinks = [
     icon: <Receipt className="h-5 w-5" />,
   },
   {
-    title: "Tài chính & Rút tiền",
-    href: "/seller/finance",
-    icon: <Wallet className="h-5 w-5" />,
+    title: "Cài đặt Shop",
+    href: "/seller/settings",
+    icon: <Settings className="h-5 w-5" />,
   },
 ];
 

@@ -19,13 +19,20 @@ public class OrderResponse {
     private BigDecimal depositAmount;
     private Instant createdAt;
     private List<OrderItemSummary> items;
+    private String depositBillUrl;
+    private Instant escrowHoldAt;
+    private String sellerName;
+    private String sellerBankAccount;
+    private String sellerBankName;
+    private String buyerName;
 
     public OrderResponse() {
     }
 
     public OrderResponse(Long id, Long userId, Long shopId, String shopName, CheckoutType checkoutType,
                          OrderStatus status, BigDecimal totalAmount, BigDecimal depositAmount,
-                         Instant createdAt, List<OrderItemSummary> items) {
+                         Instant createdAt, List<OrderItemSummary> items, String depositBillUrl, Instant escrowHoldAt,
+                         String sellerName, String sellerBankAccount, String sellerBankName, String buyerName) {
         this.id = id;
         this.userId = userId;
         this.shopId = shopId;
@@ -36,6 +43,12 @@ public class OrderResponse {
         this.depositAmount = depositAmount;
         this.createdAt = createdAt;
         this.items = items;
+        this.depositBillUrl = depositBillUrl;
+        this.escrowHoldAt = escrowHoldAt;
+        this.sellerName = sellerName;
+        this.sellerBankAccount = sellerBankAccount;
+        this.sellerBankName = sellerBankName;
+        this.buyerName = buyerName;
     }
 
     public Long getId() {
@@ -118,9 +131,58 @@ public class OrderResponse {
         this.items = items;
     }
 
+    public String getDepositBillUrl() {
+        return depositBillUrl;
+    }
+
+    public void setDepositBillUrl(String depositBillUrl) {
+        this.depositBillUrl = depositBillUrl;
+    }
+
+    public Instant getEscrowHoldAt() {
+        return escrowHoldAt;
+    }
+
+    public void setEscrowHoldAt(Instant escrowHoldAt) {
+        this.escrowHoldAt = escrowHoldAt;
+    }
+
+    public String getSellerName() {
+        return sellerName;
+    }
+
+    public void setSellerName(String sellerName) {
+        this.sellerName = sellerName;
+    }
+
+    public String getSellerBankAccount() {
+        return sellerBankAccount;
+    }
+
+    public void setSellerBankAccount(String sellerBankAccount) {
+        this.sellerBankAccount = sellerBankAccount;
+    }
+
+    public String getSellerBankName() {
+        return sellerBankName;
+    }
+
+    public void setSellerBankName(String sellerBankName) {
+        this.sellerBankName = sellerBankName;
+    }
+
+    public String getBuyerName() {
+        return buyerName;
+    }
+
+    public void setBuyerName(String buyerName) {
+        this.buyerName = buyerName;
+    }
+
     public static class OrderItemSummary {
         private Long productId;
         private String productName;
+        private String productImage;
         private Integer quantity;
         private BigDecimal unitPrice;
         private BigDecimal lineTotal;
@@ -128,10 +190,11 @@ public class OrderResponse {
         public OrderItemSummary() {
         }
 
-        public OrderItemSummary(Long productId, String productName, Integer quantity, BigDecimal unitPrice,
+        public OrderItemSummary(Long productId, String productName, String productImage, Integer quantity, BigDecimal unitPrice,
                                 BigDecimal lineTotal) {
             this.productId = productId;
             this.productName = productName;
+            this.productImage = productImage;
             this.quantity = quantity;
             this.unitPrice = unitPrice;
             this.lineTotal = lineTotal;
@@ -151,6 +214,14 @@ public class OrderResponse {
 
         public void setProductName(String productName) {
             this.productName = productName;
+        }
+
+        public String getProductImage() {
+            return productImage;
+        }
+
+        public void setProductImage(String productImage) {
+            this.productImage = productImage;
         }
 
         public Integer getQuantity() {

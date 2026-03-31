@@ -5,6 +5,7 @@ import "./globals.css";
 import { CartProvider } from "@/context/cart-context";
 import { AuthProvider } from "@/context/auth-context";
 import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -37,7 +38,9 @@ export default function RootLayout({
             {/* 2. CHÈN HEADER Ở ĐÂY */}
             <Header />
 
-            <main>{children}</main>
+            <main className="flex-1">{children}</main>
+
+            <Footer />
 
             <Toaster
               position="top-right"

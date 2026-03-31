@@ -11,11 +11,6 @@ export function AppShell({ children, className }: { children: ReactNode; classNa
           {children}
         </PageContainer>
       </main>
-
-      {/* Senior Tip: Luôn dự phòng một Footer đơn giản để tạo cảm giác website hoàn chỉnh */}
-      <footer className="border-t border-border bg-card py-8 text-center text-sm text-muted-foreground">
-        © 2026 Marketplace Refactor. All rights reserved.
-      </footer>
     </div>
   );
 }

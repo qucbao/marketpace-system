@@ -14,12 +14,13 @@ public class CartResponse {
     private BigDecimal totalPrice;
     private Instant createdAt;
     private Instant updatedAt;
+    private String productImage;
 
     public CartResponse() {
     }
 
     public CartResponse(Long itemId, Long userId, Long productId, String productName, BigDecimal productPrice,
-                        Integer quantity, BigDecimal totalPrice, Instant createdAt, Instant updatedAt) {
+                        Integer quantity, BigDecimal totalPrice, Instant createdAt, Instant updatedAt, String productImage) {
         this.itemId = itemId;
         this.userId = userId;
         this.productId = productId;
@@ -29,6 +30,7 @@ public class CartResponse {
         this.totalPrice = totalPrice;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.productImage = productImage;
     }
 
     public Long getItemId() {
@@ -101,5 +103,13 @@ public class CartResponse {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public String getProductImage() {
+        return productImage;
+    }
+
+    public void setProductImage(String productImage) {
+        this.productImage = productImage;
     }
 }

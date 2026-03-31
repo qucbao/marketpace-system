@@ -7,10 +7,14 @@ export interface UserProfileResponse {
   email: string;
   role: Role;
   createdAt: string;
+  bankAccount?: string;
+  bankName?: string;
 }
 
 export interface UserUpdateRequest {
   fullName: string;
+  bankAccount?: string;
+  bankName?: string;
 }
 
 export const usersApi = {
@@ -19,4 +23,7 @@ export const usersApi = {
     
   updateProfile: (data: UserUpdateRequest) =>
     apiClient.put<UserProfileResponse>("/users/profile", data),
+    
+  getAdminBank: () => 
+    apiClient.get<UserProfileResponse>("/users/admin-bank"),
 };

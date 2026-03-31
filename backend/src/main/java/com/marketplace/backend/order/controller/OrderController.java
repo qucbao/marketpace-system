@@ -48,6 +48,34 @@ public class OrderController {
         return ResponseEntity.ok(ApiResponse.ok("Order retrieved successfully", response));
     }
 
+    @PostMapping("/{id}/submit-bill")
+    public ResponseEntity<ApiResponse<OrderResponse>> submitBill(@PathVariable Long id, @RequestBody java.util.Map<String, String> payload, HttpServletRequest httpServletRequest) {
+        String billUrl = payload.get("billUrl");
+        if (billUrl == null) {
+            return ResponseEntity.badRequest().body(ApiResponse.fail("billUrl is missing in request", null));
+        }
+        OrderResponse response = orderService.submitDepositBill(id, resolveUserId(httpServletRequest), billUrl);
+        return ResponseEntity.ok(ApiResponse.ok("Bill submitted successfully", response));
+    }
+
+    @PostMapping("/{id}/approve-deposit")
+    public ResponseEntity<ApiResponse<OrderResponse>> approveDeposit(@PathVariable Long id) {
+        OrderResponse response = orderService.approveDeposit(id);
+        return ResponseEntity.ok(ApiResponse.ok("Deposit approved successfully", response));
+    }
+
+    @PostMapping("/{id}/confirm-delivery")
+    public ResponseEntity<ApiResponse<OrderResponse>> confirmDelivery(@PathVariable Long id, HttpServletRequest httpServletRequest) {
+        OrderResponse response = orderService.confirmDelivery(id, resolveUserId(httpServletRequest));
+        return ResponseEntity.ok(ApiResponse.ok("Delivery confirmed successfully", response));
+    }
+
+    @PostMapping("/{id}/release-escrow")
+    public ResponseEntity<ApiResponse<OrderResponse>> releaseEscrow(@PathVariable Long id) {
+        OrderResponse response = orderService.releaseEscrow(id);
+        return ResponseEntity.ok(ApiResponse.ok("Escrow released successfully", response));
+    }
+
     private Long resolveUserId(HttpServletRequest request) {
         Object userId = request.getAttribute("userId");
         if (userId instanceof Number number) {

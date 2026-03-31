@@ -18,4 +18,5 @@ export interface CartResponse {
     totalPrice: number;   // Trong Java là BigDecimal
     createdAt: string;
     updatedAt: string;
+    productImage?: string;
 }

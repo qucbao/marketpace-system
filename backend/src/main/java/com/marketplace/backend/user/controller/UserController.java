@@ -43,4 +43,10 @@ public class UserController {
         UserResponse response = userService.updateUserProfile(userId, updateRequest);
         return ResponseEntity.ok(ApiResponse.ok("Cập nhật thông tin thành công", response));
     }
+
+    @GetMapping("/admin-bank")
+    public ResponseEntity<ApiResponse<UserResponse>> getAdminBank() {
+        UserResponse response = userService.getAdminBankInfo();
+        return ResponseEntity.ok(ApiResponse.ok("Lấy thông tin Admin thành công", response));
+    }
 }

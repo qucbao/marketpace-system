@@ -1,6 +1,10 @@
 "use client";
 
+import Image from "next/image";
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { ShoppingBag, Truck, Store, ArrowRight, ShieldCheck, Info } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   AppShell,
@@ -19,8 +23,8 @@ import {
   Select,
 } from "@/components/ui";
 import { useCart } from "@/hooks/use-cart";
-import { ordersApi } from "@/lib/api";
-import type { CheckoutRequest, CheckoutType, OrderResponse } from "@/types";
+import { ordersApi, filesApi } from "@/lib/api";
+import type { CheckoutRequest, CheckoutType } from "@/types";
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat("vi-VN", {
@@ -35,12 +39,11 @@ const initialForm: CheckoutRequest = {
 };
 
 export function CheckoutPageContent() {
+  const router = useRouter();
   const { items, loading, errorMessage: cartErrorMessage, clearCart } = useCart();
   const [form, setForm] = useState<CheckoutRequest>(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
-  const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [order, setOrder] = useState<OrderResponse | null>(null);
 
   const totalPrice = useMemo(
     () => items.reduce((sum, item) => sum + item.totalPrice, 0),
@@ -51,200 +54,216 @@ export function CheckoutPageContent() {
 
   async function handleCheckout() {
     if (items.length === 0) {
-      setCheckoutError("Your cart is empty.");
+      setCheckoutError("Giỏ hàng của bạn đang trống.");
       return;
     }
 
     setSubmitting(true);
     setCheckoutError(null);
-    setSuccessMessage(null);
 
     try {
       const response = await ordersApi.checkout({
         checkoutType: form.checkoutType,
       });
 
-      setOrder(response.data);
-      clearCart();
-      setSuccessMessage("Checkout completed successfully.");
+      if (response.success) {
+        toast.success("Đặt hàng thành công!");
+        clearCart();
+        // Chuyển hướng ngay đến trang chi tiết để thực hiện quy trình cọc/vận chuyển
+        router.push(`/orders/${response.data.id}`);
+      }
     } catch (error) {
       setCheckoutError(
-        error instanceof Error ? error.message : "Unable to complete checkout",
+        error instanceof Error ? error.message : "Không thể hoàn tất đặt hàng",
       );
+      toast.error("Đã xảy ra lỗi khi đặt hàng.");
     } finally {
       setSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <AppShell>
+        <PageContainer>
+          <LoadingState 
+            title="Đang chuẩn bị vận đơn" 
+            description="Vui lòng chờ trong giây lát..." 
+          />
+        </PageContainer>
+      </AppShell>
+    );
+  }
+
+  if (!loading && items.length === 0) {
+    return (
+      <AppShell>
+        <PageContainer>
+           <div className="mt-10">
+              <EmptyState
+                title="Chưa có sản phẩm để thanh toán"
+                description="Hãy thêm sản phẩm vào giỏ hàng trước khi tiếp tục."
+                action={
+                  <Button onClick={() => router.push("/")} variant="secondary">
+                    Quay lại mua sắm
+                  </Button>
+                }
+              />
+           </div>
+        </PageContainer>
+      </AppShell>
+    );
   }
 
   return (
     <AppShell>
       <PageContainer className="px-0 lg:px-0">
         <SectionHeader
-          eyebrow="Checkout"
-          title="Checkout"
-          description="Review your cart, choose a fulfillment method, and submit the order."
+          eyebrow="Giao dịch bảo mật"
+          title="Xác nhận Thanh toán"
+          description="Kiểm tra lại giỏ hàng và chọn phương thức nhận hàng phù hợp."
         />
 
-        <div className="mt-10 grid gap-6 lg:grid-cols-[1.5fr_0.9fr]">
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Checkout form</CardTitle>
+        <div className="mt-10 grid gap-8 lg:grid-cols-[1.6fr_0.8fr]">
+          <div className="space-y-6">
+            <Card className="overflow-hidden border-none shadow-sm ring-1 ring-slate-200">
+              <CardHeader className="bg-slate-50 border-b py-4">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <ShoppingBag className="h-5 w-5 text-primary" /> Sản phẩm thanh toán
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-5">
-                <FormField>
-                  <FormLabel htmlFor="checkout-type">Checkout type</FormLabel>
-                  <Select
-                    id="checkout-type"
-                    value={form.checkoutType}
-                    disabled={loading || submitting}
-                    onChange={(event) => {
-                      setForm((current) => ({
-                        ...current,
-                        checkoutType: event.target.value as CheckoutType,
-                      }));
-                    }}
-                  >
-                    <option value="PICKUP">Pickup</option>
-                    <option value="DELIVERY">Delivery</option>
-                  </Select>
-                </FormField>
-
-                {depositAmount > 0 && !order ? (
-                  <div className="mt-4 flex flex-col items-center justify-center p-4 border border-orange-200 bg-orange-50 rounded-xl space-y-3">
-                    <p className="font-semibold text-orange-800">Quét mã QR để đặt cọc</p>
-                    <img 
-                      src={`https://img.vietqr.io/image/970422-0123456789-compact2.png?amount=${depositAmount}&addInfo=ThanhToanCoc&accountName=MARKETPLACE`} 
-                      alt="VietQR"
-                      className="w-48 h-48 rounded-lg shadow-sm"
-                    />
-                    <p className="text-xs text-orange-600/80 text-center max-w-[250px]">
-                      Sử dụng App ngân hàng hoặc VNPay quét mã này để chuyển khoản số tiền cọc {formatPrice(depositAmount)}.
-                    </p>
-                  </div>
-                ) : null}
-
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={handleCheckout}
-                  isLoading={submitting}
-                  disabled={loading || !!cartErrorMessage || !!checkoutError || items.length === 0}
-                  className="w-full bg-slate-900 text-white hover:bg-slate-800 mt-4"
-                >
-                  {depositAmount > 0 ? "Tôi đã chuyển khoản - Xác nhận" : "Xác nhận đặt hàng"}
-                </Button>
+              <CardContent className="p-0">
+                <div className="divide-y">
+                   {items.map((item) => (
+                     <div key={item.itemId} className="flex items-center gap-4 p-5 hover:bg-slate-50 transition-colors">
+                        <div className="h-20 w-20 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border">
+                           <Image
+                              src={item.productImage 
+                                ? filesApi.getDownloadUrl(item.productImage.split('/').pop() || '') 
+                                : `https://picsum.photos/seed/${item.productId}/200`}
+                              alt={item.productName}
+                              width={80}
+                              height={80}
+                              className="h-full w-full object-cover"
+                           />
+                        </div>
+                        <div className="flex-1">
+                           <h3 className="font-bold text-slate-900">{item.productName}</h3>
+                           <p className="text-sm text-slate-500 mt-0.5">{formatPrice(item.productPrice)} x {item.quantity}</p>
+                        </div>
+                        <div className="text-right">
+                           <p className="font-extrabold text-slate-900">{formatPrice(item.totalPrice)}</p>
+                        </div>
+                     </div>
+                   ))}
+                </div>
               </CardContent>
             </Card>
 
-            {cartErrorMessage || checkoutError ? (
-              <ErrorState
-                title="KhĂ´ng thá»ƒ tiáº¿p tá»¥c thanh toĂ¡n"
-                description={checkoutError ?? cartErrorMessage ?? undefined}
-              />
-            ) : null}
-
-            {successMessage ? (
-              <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 px-5 py-4 text-sm text-emerald-700">
-                {successMessage}
-              </div>
-            ) : null}
-
-            {loading ? (
-              <LoadingState
-                title="Äang táº£i giá» hĂ ng"
-                description="ThĂ´ng tin thanh toĂ¡n sáº½ xuáº¥t hiá»‡n ngay sau khi dá»¯ liá»‡u sáºµn sĂ ng."
-              />
-            ) : null}
-
-            {!loading && !cartErrorMessage && !checkoutError && items.length === 0 && !order ? (
-              <EmptyState
-                title="ChÆ°a cĂ³ sáº£n pháº©m Ä‘á»ƒ thanh toĂ¡n"
-                description="HĂ£y thĂªm sáº£n pháº©m vĂ o giá» hĂ ng trÆ°á»›c khi tiáº¿p tá»¥c."
-              />
-            ) : null}
-
-            {!loading && !cartErrorMessage && !checkoutError && items.length > 0 ? (
-              <div className="grid gap-4">
-                {items.map((item) => (
-                  <Card key={item.itemId}>
-                    <CardContent className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                      <div className="space-y-3">
-                        <h3 className="text-lg font-semibold tracking-tight text-[var(--foreground)]">
-                          {item.productName}
-                        </h3>
-                        <div className="grid gap-1.5 text-sm text-[var(--muted)]">
-                          <p>Price: {formatPrice(item.productPrice)}</p>
-                          <p>Quantity: {item.quantity}</p>
-                          <p>Total: {formatPrice(item.totalPrice)}</p>
+            <Card className="border-none shadow-sm ring-1 ring-slate-200">
+               <CardHeader className="py-4 border-b">
+                 <CardTitle className="text-base">Phương thức nhận hàng</CardTitle>
+               </CardHeader>
+               <CardContent className="p-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                     <button
+                        onClick={() => setForm({ checkoutType: "PICKUP" })}
+                        className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.checkoutType === "PICKUP" ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                     >
+                        <div className={`p-3 rounded-full ${form.checkoutType === "PICKUP" ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>
+                           <Store className="h-6 w-6" />
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            ) : null}
+                        <div className="text-center">
+                           <p className="font-bold text-slate-900">Nhận tại cửa hàng</p>
+                           <p className="text-[10px] text-slate-500 mt-1 uppercase font-bold tracking-wider">Miễn phí cọc</p>
+                        </div>
+                     </button>
 
-            {order ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Order created</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3 text-sm text-[var(--muted)]">
-                  <p>
-                    Order id:{" "}
-                    <span className="font-medium text-[var(--foreground)]">
-                      {order.id}
-                    </span>
-                  </p>
-                  <p>
-                    Status:{" "}
-                    <span className="font-medium text-[var(--foreground)]">
-                      {order.status}
-                    </span>
-                  </p>
-                  <p>
-                    Shop:{" "}
-                    <span className="font-medium text-[var(--foreground)]">
-                      {order.shopName}
-                    </span>
-                  </p>
-                </CardContent>
-              </Card>
-            ) : null}
+                     <button
+                        onClick={() => setForm({ checkoutType: "DELIVERY" })}
+                        className={`flex flex-col items-center gap-3 p-5 rounded-2xl border-2 transition-all ${form.checkoutType === "DELIVERY" ? 'border-primary bg-primary/5' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                     >
+                        <div className={`p-3 rounded-full ${form.checkoutType === "DELIVERY" ? 'bg-primary text-white' : 'bg-slate-100 text-slate-400'}`}>
+                           <Truck className="h-6 w-6" />
+                        </div>
+                        <div className="text-center">
+                           <p className="font-bold text-slate-900">Giao hàng tận nơi</p>
+                           <p className="text-[10px] text-accent mt-1 uppercase font-bold tracking-wider">Cọc 20% bảo hiểm</p>
+                        </div>
+                     </button>
+                  </div>
+               </CardContent>
+            </Card>
           </div>
 
-          <div className="grid gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Order summary</CardTitle>
+          <div className="space-y-6">
+            <Card className="border-none shadow-xl ring-1 ring-slate-200 sticky top-24">
+              <CardHeader className="bg-slate-900 text-white border-none py-6 rounded-t-2xl">
+                <CardTitle className="text-xl flex items-center justify-between">
+                  Tổng kết <ShoppingBag className="h-5 w-5 opacity-50" />
+                </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-5">
-                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-                  <span>Checkout type</span>
-                  <span className="font-medium text-[var(--foreground)]">
-                    {form.checkoutType}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-                  <span>Total price</span>
-                  <span className="font-medium text-[var(--foreground)]">
+              <CardContent className="p-6 space-y-5">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500 font-medium tracking-tight">Tạm tính ({items.length} sp)</span>
+                  <span className="font-bold text-slate-900">
                     {formatPrice(totalPrice)}
                   </span>
                 </div>
-                <div className="flex items-center justify-between text-sm text-[var(--muted)]">
-                  <span>Deposit amount</span>
-                  <span className="font-medium text-[var(--foreground)]">
-                    {formatPrice(depositAmount)}
-                  </span>
+                
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500 font-medium">Phí vận chuyển</span>
+                  <span className="font-bold text-emerald-600">Miễn phí</span>
                 </div>
-                <div className="border-t border-[var(--border)] pt-4 text-sm leading-7 text-[var(--muted)]">
-                  {form.checkoutType === "DELIVERY"
-                    ? "Delivery requires a 20% deposit."
-                    : "Pickup requires no deposit."}
+
+                {form.checkoutType === "DELIVERY" && (
+                  <div className="flex items-center justify-between text-sm p-3 bg-accent/5 rounded-xl border border-accent/10">
+                    <span className="text-accent font-bold">Yêu cầu cọc (20%)</span>
+                    <span className="font-extrabold text-accent">
+                      {formatPrice(depositAmount)}
+                    </span>
+                  </div>
+                )}
+
+                <div className="pt-4 border-t border-slate-100 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-slate-900">Tổng cộng</span>
+                    <span className="text-2xl font-black text-primary tracking-tighter">
+                      {formatPrice(totalPrice)}
+                    </span>
+                  </div>
+
+                  <div className="bg-blue-50 p-3 rounded-xl flex gap-3 items-start border border-blue-100">
+                     <Info className="h-4 w-4 text-blue-600 shrink-0 mt-0.5" />
+                     <p className="text-[11px] text-blue-800 leading-relaxed font-medium">
+                        {form.checkoutType === "DELIVERY" 
+                          ? "Bạn sẽ thực hiện chuyển khoản cọc sau khi nhấn xác nhận để người bán chuẩn bị hàng." 
+                          : "Vui lòng xác nhận để đặt giữ hàng. Bạn sẽ thanh toán trực tiếp khi đến shop."}
+                     </p>
+                  </div>
+
+                  <Button
+                    onClick={handleCheckout}
+                    isLoading={submitting}
+                    className="w-full h-14 bg-primary hover:bg-primary/95 text-white font-black text-base rounded-2xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                  >
+                    XÁC NHẬN ĐẶT HÀNG <ArrowRight className="h-5 w-5" />
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-center gap-2 pt-2 grayscale opacity-50">
+                   <ShieldCheck className="h-4 w-4" />
+                   <span className="text-[10px] font-bold uppercase tracking-widest">Escrow Protected</span>
                 </div>
               </CardContent>
             </Card>
+
+            {(cartErrorMessage || checkoutError) && (
+              <ErrorState
+                title="Lỗi thanh toán"
+                description={checkoutError ?? cartErrorMessage ?? undefined}
+              />
+            )}
           </div>
         </div>
       </PageContainer>
