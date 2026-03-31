@@ -8,7 +8,17 @@ import type {
 } from "@/types";
 
 export const productsApi = {
-  getAll: () => apiClient.get<ProductResponse[]>("/products"),
+  getAll: (params?: { query?: string; categoryId?: number; minPrice?: number; maxPrice?: number; sort?: string }) => {
+    const searchParams = new URLSearchParams();
+    if (params?.query) searchParams.append("query", params.query);
+    if (params?.categoryId) searchParams.append("categoryId", params.categoryId.toString());
+    if (params?.minPrice) searchParams.append("minPrice", params.minPrice.toString());
+    if (params?.maxPrice) searchParams.append("maxPrice", params.maxPrice.toString());
+    if (params?.sort) searchParams.append("sort", params.sort);
+    
+    const queryString = searchParams.toString();
+    return apiClient.get<ProductResponse[]>(`/products${queryString ? `?${queryString}` : ""}`);
+  },
 
   getById: (id: number) => apiClient.get<ProductResponse>(`/products/${id}`),
 

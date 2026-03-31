@@ -12,10 +12,15 @@ import com.marketplace.backend.product.repository.ProductRepository;
 import com.marketplace.backend.shop.entity.Shop;
 import com.marketplace.backend.shop.entity.ShopStatus;
 import com.marketplace.backend.shop.repository.ShopRepository;
+import jakarta.persistence.criteria.Predicate;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +41,62 @@ public class ProductService {
     @Transactional(readOnly = true)
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAllByOrderByCreatedAtDesc()
+                .stream()
+                .map(this::convertToResponse)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProductResponse> searchProducts(String query, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, String sort) {
+        Specification<Product> spec = (root, q, cb) -> {
+            List<Predicate> predicates = new ArrayList<>();
+
+            // Only show active products
+            predicates.add(cb.equal(root.get("status"), ProductStatus.ACTIVE));
+
+            if (query != null && !query.isBlank()) {
+                String pattern = "%" + query.toLowerCase() + "%";
+                predicates.add(cb.or(
+                    cb.like(cb.lower(root.get("name")), pattern),
+                    cb.like(cb.lower(root.get("description")), pattern)
+                ));
+            }
+
+            if (categoryId != null) {
+                predicates.add(cb.equal(root.get("category").get("id"), categoryId));
+            }
+
+            if (minPrice != null) {
+                predicates.add(cb.greaterThanOrEqualTo(root.get("price"), minPrice));
+            }
+
+            if (maxPrice != null) {
+                predicates.add(cb.lessThanOrEqualTo(root.get("price"), maxPrice));
+            }
+
+            return cb.and(predicates.toArray(new Predicate[0]));
+        };
+
+        Sort sortOrder = Sort.by(Sort.Direction.DESC, "createdAt");
+        if (sort != null) {
+            switch (sort) {
+                case "price_asc":
+                    sortOrder = Sort.by(Sort.Direction.ASC, "price");
+                    break;
+                case "price_desc":
+                    sortOrder = Sort.by(Sort.Direction.DESC, "price");
+                    break;
+                case "hot":
+                    sortOrder = Sort.by(Sort.Direction.DESC, "soldCount");
+                    break;
+                case "newest":
+                default:
+                    sortOrder = Sort.by(Sort.Direction.DESC, "createdAt");
+                    break;
+            }
+        }
+
+        return productRepository.findAll(spec, sortOrder)
                 .stream()
                 .map(this::convertToResponse)
                 .toList();

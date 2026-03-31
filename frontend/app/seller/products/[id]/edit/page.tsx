@@ -6,9 +6,11 @@ import { ArrowLeft, Save, X, ImagePlus } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
 
+import { productsApi } from "@/lib/api/products";
 import { sellerProductsApi } from "@/lib/api/seller-products";
 import { categoriesApi } from "@/lib/api/categories";
 import { filesApi } from "@/lib/api/files";
+import { cn } from "@/lib/utils";
 import type { CategoryResponse, ProductResponse } from "@/types";
 
 export default function EditProductPage() {
@@ -41,28 +43,26 @@ export default function EditProductPage() {
         setLoading(true);
         const [catRes, prodRes] = await Promise.all([
           categoriesApi.getAll(),
-          sellerProductsApi.getAll(), 
+          productsApi.getById(parseInt(productId)), 
         ]);
 
         if (catRes.success) setCategories(catRes.data);
         
         if (prodRes.success) {
-          const product = prodRes.data.find(p => p.id === parseInt(productId));
-          if (product) {
-            setFormData({
-              name: product.name,
-              description: product.description,
-              price: product.price.toString(),
-              stock: (product.stock ?? 0).toString(),
-              categoryId: product.categoryId.toString(),
-              condition: product.condition,
-              status: product.status,
-            });
-            setExistingImages(product.imageUrls || []);
-          } else {
-            toast.error("Không tìm thấy sản phẩm.");
-            router.push("/seller/products");
-          }
+          const product = prodRes.data;
+          setFormData({
+            name: product.name,
+            description: product.description,
+            price: product.price.toString(),
+            stock: (product.stock ?? 0).toString(),
+            categoryId: product.categoryId.toString(),
+            condition: product.condition,
+            status: product.status,
+          });
+          setExistingImages(product.imageUrls || []);
+        } else {
+          toast.error("Không tìm thấy sản phẩm.");
+          router.push("/seller/products");
         }
       } catch (err: any) {
         toast.error("Lỗi tải dữ liệu.");
@@ -217,8 +217,8 @@ export default function EditProductPage() {
               ))}
 
               {existingImages.length + newFiles.length < 5 && (
-                <label className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-orange-500 hover:bg-orange-50/30 cursor-pointer transition-all">
-                  <ImagePlus className="h-8 w-8 text-slate-400 mb-2" />
+                <label className="flex flex-col items-center justify-center aspect-square rounded-lg border-2 border-dashed border-slate-200 hover:border-orange-500 hover:bg-orange-50/30 cursor-pointer transition-all group/upload">
+                  <ImagePlus className="h-8 w-8 text-slate-400 mb-2 group-hover/upload:scale-110 transition-transform" />
                   <span className="text-xs font-medium text-slate-500">Thêm ảnh</span>
                   <input type="file" accept="image/*" multiple onChange={handleNewImageChange} className="hidden" />
                 </label>

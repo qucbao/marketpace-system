@@ -33,8 +33,13 @@ public class ProductController {
     }
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAll() {
-        List<ProductResponse> response = productService.getAllProducts();
+    public ResponseEntity<ApiResponse<List<ProductResponse>>> getAll(
+            @RequestParam(required = false) String query,
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) java.math.BigDecimal minPrice,
+            @RequestParam(required = false) java.math.BigDecimal maxPrice,
+            @RequestParam(required = false, defaultValue = "newest") String sort) {
+        List<ProductResponse> response = productService.searchProducts(query, categoryId, minPrice, maxPrice, sort);
         return ResponseEntity.ok(ApiResponse.ok("Products retrieved successfully", response));
     }
 

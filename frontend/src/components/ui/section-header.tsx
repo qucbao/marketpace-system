@@ -27,7 +27,7 @@ export function SectionHeader({
     >
       <div className="max-w-3xl space-y-3">
         {eyebrow ? (
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted)]">
+          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-[var(--muted-foreground)]">
             {eyebrow}
           </p>
         ) : null}
@@ -35,7 +35,7 @@ export function SectionHeader({
           {title}
         </h1>
         {description ? (
-          <p className="max-w-2xl text-sm leading-7 text-[var(--muted)] sm:text-base">
+          <p className="max-w-2xl text-sm leading-7 text-[var(--muted-foreground)] sm:text-base">
             {description}
           </p>
         ) : null}

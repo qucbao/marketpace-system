@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Heart, Menu, PlusCircle, Search, ShoppingCart, Store } from "lucide-react";
 
@@ -16,6 +18,14 @@ const links = [
 export function Header() {
   const { items } = useCart();
   const { user, isAuthenticated, loading, logout } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      router.push(`/products?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border bg-white/80 backdrop-blur-md">
@@ -23,7 +33,7 @@ export function Header() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-2">
             <span className="text-xl font-bold tracking-tight text-primary">
-              REUSE<span className="text-accent">.hub</span>
+              Marketplace<span className="text-accent">.vn</span>
             </span>
           </Link>
 
@@ -45,10 +55,11 @@ export function Header() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
-              value="Search coming soon"
-              readOnly
-              aria-label="Search coming soon"
-              className="rounded-full border-border bg-muted/50 pl-10 pr-4 text-muted-foreground"
+              placeholder="Tìm kiếm sản phẩm..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
+              className="rounded-full border-border bg-muted/50 pl-10 pr-4 text-slate-900 focus-visible:ring-primary/20"
             />
           </div>
         </div>

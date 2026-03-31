@@ -11,7 +11,6 @@ import java.util.List;
 
 public class ProductUpdateRequest {
 
-    @NotNull(message = "Owner id is required")
     private Long ownerId;
 
     @NotNull(message = "Category id is required")
