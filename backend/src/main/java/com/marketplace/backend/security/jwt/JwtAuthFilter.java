@@ -42,15 +42,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             // 2. Nếu có token, tiến hành validate như bình thường
             Long userId = jwtService.extractUserId(token);
             String email = jwtService.extractEmail(token);
+            String role = jwtService.extractRole(token);
 
             if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 request.setAttribute("userId", userId);
                 request.setAttribute("email", email);
 
+                java.util.List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities = Collections.emptyList();
+                if (role != null) {
+                    authorities = Collections.singletonList(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role));
+                }
+
                 UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                         email,
                         null,
-                        Collections.emptyList());
+                        authorities);
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             }
         } catch (Exception e) {

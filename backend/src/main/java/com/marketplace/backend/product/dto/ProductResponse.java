@@ -4,6 +4,7 @@ import com.marketplace.backend.product.entity.ProductStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public class ProductResponse {
 
@@ -12,6 +13,7 @@ public class ProductResponse {
     private String description;
     private String condition;
     private BigDecimal price;
+    private Integer stock;
     private ProductStatus status;
     private Long shopId;
     private String shopName;
@@ -21,18 +23,20 @@ public class ProductResponse {
     private String ownerName;
     private Instant createdAt;
     private Instant updatedAt;
+    private List<String> imageUrls;
 
     public ProductResponse() {
     }
 
-    public ProductResponse(Long id, String name, String description, String condition, BigDecimal price,
+    public ProductResponse(Long id, String name, String description, String condition, BigDecimal price, Integer stock,
                            ProductStatus status, Long shopId, String shopName, Long categoryId, String categoryName,
-                           Long ownerId, String ownerName, Instant createdAt, Instant updatedAt) {
+                           Long ownerId, String ownerName, Instant createdAt, Instant updatedAt, List<String> imageUrls) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.condition = condition;
         this.price = price;
+        this.stock = stock;
         this.status = status;
         this.shopId = shopId;
         this.shopName = shopName;
@@ -42,6 +46,7 @@ public class ProductResponse {
         this.ownerName = ownerName;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.imageUrls = imageUrls;
     }
 
     public Long getId() {
@@ -82,6 +87,14 @@ public class ProductResponse {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
     }
 
     public ProductStatus getStatus() {
@@ -154,5 +167,13 @@ public class ProductResponse {
 
     public void setUpdatedAt(Instant updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }

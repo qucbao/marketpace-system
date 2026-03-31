@@ -22,6 +22,11 @@ public class AdminShopController {
         this.shopService = shopService;
     }
 
+    @org.springframework.web.bind.annotation.GetMapping("/pending")
+    public ResponseEntity<ApiResponse<java.util.List<ShopResponse>>> getPendingShops() {
+        return ResponseEntity.ok(ApiResponse.ok("Pending shops retrieved successfully", shopService.getPendingShops()));
+    }
+
     @PostMapping("/{id}/approve")
     public ResponseEntity<ApiResponse<ShopResponse>> approve(@PathVariable Long id) {
         ShopResponse response = shopService.approve(id);

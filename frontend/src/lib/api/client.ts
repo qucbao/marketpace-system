@@ -22,8 +22,9 @@ async function request<T>(
   init: RequestInitWithJson = {},
 ): Promise<ApiResponse<T>> {
   const headers = new Headers(init.headers);
+  const isFormData = init.json instanceof FormData;
 
-  if (init.json !== undefined) {
+  if (init.json !== undefined && !isFormData) {
     headers.set("Content-Type", "application/json");
   }
 
@@ -40,7 +41,9 @@ async function request<T>(
       const response = await fetch(`${API_BASE_URL}${path}`, {
         ...init,
         headers,
-        body: init.json !== undefined ? JSON.stringify(init.json) : init.body,
+        body: isFormData 
+          ? (init.json as FormData) 
+          : (init.json !== undefined ? JSON.stringify(init.json) : init.body),
         cache: "no-store",
       });
 

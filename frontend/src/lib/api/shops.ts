@@ -5,6 +5,9 @@ export const shopsApi = {
   // THÊM: Lấy danh sách tất cả các shop
   getAll: () => apiClient.get<ShopResponse[]>("/shops"),
 
+  // Lấy các shop đang chờ duyệt (Dành cho Admin)
+  getPending: () => apiClient.get<ShopResponse[]>("/admin/shops/pending"),
+
   register: (payload: ShopRegisterRequest) =>
     apiClient.post<ShopResponse>("/shops/register", payload),
 

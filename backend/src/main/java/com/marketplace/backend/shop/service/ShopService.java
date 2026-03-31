@@ -58,6 +58,12 @@ public class ShopService {
         Shop shop = getShopEntity(id);
         shop.setStatus(ShopStatus.APPROVED);
         shop.setUpdatedAt(Instant.now());
+
+        // Nâng cấp User lên SELLER
+        if (shop.getOwner() != null && shop.getOwner().getRole() == com.marketplace.backend.user.entity.Role.USER) {
+            shop.getOwner().setRole(com.marketplace.backend.user.entity.Role.SELLER);
+        }
+
         return toResponse(shopRepository.save(shop));
     }
 
@@ -70,10 +76,23 @@ public class ShopService {
     }
 
     @Transactional(readOnly = true)
-    public List<ShopResponse> getAll() {
-        return shopRepository.findAll().stream()
+    public List<ShopResponse> getApprovedShops() {
+        return shopRepository.findByStatus(ShopStatus.APPROVED).stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShopResponse> getPendingShops() {
+        return shopRepository.findByStatus(ShopStatus.PENDING).stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
+    }
+
+    // Giữ nguyên getAll cho tương thích, nhưng thực chất chỉ trả về APPROVED cho an toàn
+    @Transactional(readOnly = true)
+    public List<ShopResponse> getAll() {
+        return getApprovedShops();
     }
 
     private Shop getShopEntity(Long id) {

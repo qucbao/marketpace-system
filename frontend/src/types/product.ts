@@ -8,6 +8,8 @@ export interface ProductCreateRequest {
   description: string;
   condition: string;
   price: number;
+  stock: number;
+  imageUrls: string[];
 }
 
 export interface ProductUpdateRequest {
@@ -17,7 +19,9 @@ export interface ProductUpdateRequest {
   description: string;
   condition: string;
   price: number;
+  stock: number;
   status: ProductStatus;
+  imageUrls: string[];
 }
 
 export interface ProductResponse {
@@ -26,6 +30,7 @@ export interface ProductResponse {
   description: string;
   condition: string;
   price: number;
+  stock: number;
   status: ProductStatus;
   shopId: number;
   shopName: string;
@@ -35,4 +40,5 @@ export interface ProductResponse {
   ownerName: string;
   createdAt: string;
   updatedAt: string;
+  imageUrls: string[];
 }

@@ -74,7 +74,10 @@ public class OrderService {
 
         for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
-            product.setStatus(ProductStatus.SOLD);
+            product.setStock(product.getStock() - cartItem.getQuantity());
+            if (product.getStock() <= 0) {
+                product.setStatus(ProductStatus.SOLD);
+            }
             product.setUpdatedAt(Instant.now());
             productRepository.save(product);
         }
@@ -105,8 +108,8 @@ public class OrderService {
         for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
 
-            if (product.getStatus() == ProductStatus.SOLD) {
-                throw new IllegalArgumentException("Cannot checkout cart with sold products");
+            if (product.getStatus() == ProductStatus.SOLD || product.getStock() < cartItem.getQuantity()) {
+                throw new IllegalArgumentException("Sản phẩm '" + product.getName() + "' đã hết hàng hoặc không đủ tồn kho");
             }
 
             if (!product.getShop().getId().equals(shopId)) {
@@ -183,5 +186,40 @@ public class OrderService {
                 order.getCreatedAt(),
                 items
         );
+    }
+
+    @Transactional(readOnly = true)
+    public List<OrderResponse> getOrdersByShopId(Long shopId) {
+        return orderRepository.findAllByShopIdOrderByCreatedAtDesc(shopId)
+                .stream()
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Transactional
+    public OrderResponse updateSellerOrderStatus(Long orderId, Long shopId, OrderStatus newStatus) {
+        Order order = getOrderEntity(orderId);
+        
+        if (!order.getShop().getId().equals(shopId)) {
+            throw new IllegalArgumentException("Seller cannot update orders from other shops");
+        }
+
+        // Nếu trạng thái mới là CANCELLED, hoàn lại hàng về tồn kho
+        if (newStatus == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {
+            for (OrderItem item : order.getItems()) {
+                Product product = item.getProduct();
+                product.setStock(product.getStock() + item.getQuantity());
+                // Nếu trước đó hết hàng (SOLD), giờ có lại thì set ACTIVE
+                if (product.getStatus() == ProductStatus.SOLD) {
+                    product.setStatus(ProductStatus.ACTIVE);
+                }
+                product.setUpdatedAt(Instant.now());
+                productRepository.save(product);
+            }
+        }
+        
+        order.setStatus(newStatus);
+        Order updatedOrder = orderRepository.save(order);
+        return toResponse(updatedOrder);
     }
 }

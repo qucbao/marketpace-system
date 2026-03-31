@@ -46,6 +46,12 @@ public class SecurityConfig {
                         // Sửa lại ở đây: Thêm cả URL gốc và các URL con
                         .requestMatchers(HttpMethod.GET, "/api/products", "/api/products/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/categories", "/api/categories/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/shops", "/api/shops/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/files/download/**").permitAll()
+                        // Cho phép quản trị viên truy cập các API admin
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        // Cho phép người bán truy cập Kênh Người Bán
+                        .requestMatchers("/api/seller/**").hasAnyRole("SELLER", "ADMIN")
                         // Các lệnh còn lại (POST, PUT, DELETE) bắt buộc phải login
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);

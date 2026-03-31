@@ -6,6 +6,7 @@ import com.marketplace.backend.product.dto.ProductCreateRequest;
 import com.marketplace.backend.product.dto.ProductResponse;
 import com.marketplace.backend.product.dto.ProductUpdateRequest;
 import com.marketplace.backend.product.entity.Product;
+import com.marketplace.backend.product.entity.ProductImage;
 import com.marketplace.backend.product.entity.ProductStatus;
 import com.marketplace.backend.product.repository.ProductRepository;
 import com.marketplace.backend.shop.entity.Shop;
@@ -16,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class ProductService {
@@ -35,13 +37,13 @@ public class ProductService {
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAllByOrderByCreatedAtDesc()
                 .stream()
-                .map(this::toResponse)
+                .map(this::convertToResponse)
                 .toList();
     }
 
     @Transactional(readOnly = true)
     public ProductResponse getProductById(Long id) {
-        return toResponse(getProductEntity(id));
+        return convertToResponse(getProductEntity(id));
     }
 
     @Transactional
@@ -61,10 +63,23 @@ public class ProductService {
         product.setShop(shop);
         product.setCategory(category);
         product.setStatus(ProductStatus.ACTIVE);
+        product.setStock(request.getStock());
         product.setCreatedAt(now);
         product.setUpdatedAt(now);
 
-        return toResponse(productRepository.save(product));
+        if (request.getImageUrls() != null) {
+            List<ProductImage> images = request.getImageUrls().stream()
+                    .map(url -> {
+                        ProductImage image = new ProductImage();
+                        image.setImageUrl(url);
+                        image.setProduct(product);
+                        return image;
+                    })
+                    .collect(Collectors.toList());
+            product.setImages(images);
+        }
+
+        return convertToResponse(productRepository.save(product));
     }
 
     @Transactional
@@ -80,9 +95,23 @@ public class ProductService {
         product.setPrice(request.getPrice());
         product.setCategory(category);
         product.setStatus(request.getStatus());
+        product.setStock(request.getStock());
         product.setUpdatedAt(Instant.now());
 
-        return toResponse(productRepository.save(product));
+        if (request.getImageUrls() != null) {
+            product.getImages().clear();
+            List<ProductImage> newImages = request.getImageUrls().stream()
+                    .map(url -> {
+                        ProductImage image = new ProductImage();
+                        image.setImageUrl(url);
+                        image.setProduct(product);
+                        return image;
+                    })
+                    .collect(Collectors.toList());
+            product.getImages().addAll(newImages);
+        }
+
+        return convertToResponse(productRepository.save(product));
     }
 
     @Transactional
@@ -107,25 +136,30 @@ public class ProductService {
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
     }
 
-    private void validateApprovedShop(Shop shop) {
-        if (shop.getStatus() != ShopStatus.APPROVED) {
-            throw new IllegalArgumentException("Only approved shops can create products");
-        }
-    }
-
     private void validateShopOwner(Shop shop, Long ownerId) {
         if (!shop.getOwner().getId().equals(ownerId)) {
-            throw new IllegalArgumentException("Only shop owner can manage products");
+            throw new IllegalArgumentException("You are not the owner of this shop");
         }
     }
 
-    private ProductResponse toResponse(Product product) {
+    private void validateApprovedShop(Shop shop) {
+        if (shop.getStatus() != ShopStatus.APPROVED) {
+            throw new IllegalArgumentException("Your shop is not approved yet");
+        }
+    }
+
+    private ProductResponse convertToResponse(Product product) {
+        List<String> imageUrls = product.getImages().stream()
+                .map(ProductImage::getImageUrl)
+                .collect(Collectors.toList());
+
         return new ProductResponse(
                 product.getId(),
                 product.getName(),
                 product.getDescription(),
                 product.getCondition(),
                 product.getPrice(),
+                product.getStock(),
                 product.getStatus(),
                 product.getShop().getId(),
                 product.getShop().getName(),
@@ -134,7 +168,8 @@ public class ProductService {
                 product.getShop().getOwner().getId(),
                 product.getShop().getOwner().getFullName(),
                 product.getCreatedAt(),
-                product.getUpdatedAt()
+                product.getUpdatedAt(),
+                imageUrls
         );
     }
 }

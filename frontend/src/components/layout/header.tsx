@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { Heart, LogOut, Menu, PlusCircle, Search, ShoppingCart } from "lucide-react";
+import { Heart, Menu, PlusCircle, Search, ShoppingCart, Store } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { Button, Input, PageContainer } from "@/components/ui";
+import { UserDropdown } from "@/components/layout/user-dropdown";
 
 const links = [
   { href: "/products", label: "Khám phá" },
@@ -76,14 +77,7 @@ export function Header() {
             {loading ? (
               <div className="px-2 text-sm text-muted-foreground">Loading...</div>
             ) : isAuthenticated && user ? (
-              <div className="flex items-center gap-2">
-                <span className="hidden text-sm font-medium text-primary lg:inline">
-                  Hi, {user.fullName.split(" ")[0]}
-                </span>
-                <Button variant="ghost" size="sm" onClick={logout} title="Đăng xuất">
-                  <LogOut className="h-5 w-5 text-muted-foreground hover:text-red-500" />
-                </Button>
-              </div>
+              <UserDropdown user={user} logout={logout} />
             ) : (
               <div className="flex items-center gap-1">
                 <Link href="/login">
@@ -100,13 +94,23 @@ export function Header() {
             )}
           </div>
 
-          <Link
-            href="/shops/register"
-            className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary/90 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
-          >
-            <PlusCircle className="h-4 w-4" />
-            <span className="hidden sm:inline">Mở shop ngay</span>
-          </Link>
+            {isAuthenticated && user?.role === "SELLER" ? (
+            <Link
+              href="/seller"
+              className="flex items-center gap-2 rounded-full bg-orange-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-orange-700 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/30 focus-visible:ring-offset-2"
+            >
+              <Store className="h-4 w-4" />
+              <span className="hidden sm:inline">Kênh người bán</span>
+            </Link>
+          ) : !isAuthenticated || user?.role === "USER" ? (
+            <Link
+              href="/shops/register"
+              className="flex items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-primary/90 hover:shadow-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:ring-offset-2"
+            >
+              <PlusCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Mở shop ngay</span>
+            </Link>
+          ) : null}
 
           <button
             className="cursor-not-allowed p-2 text-muted-foreground/60 lg:hidden"

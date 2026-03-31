@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Calendar, ChevronLeft, Info, MapPin, MessageCircle, ShieldCheck, Store } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
@@ -7,6 +6,7 @@ import { vi } from "date-fns/locale";
 import { ProductAddToCart } from "@/components/product/product-add-to-cart";
 import { ProductComments } from "@/components/product/product-comments";
 import { ProductFavoriteToggle } from "@/components/product/product-favorite-toggle";
+import { ProductGallery } from "@/components/product/product-gallery";
 import {
   AppShell,
   Badge,
@@ -88,26 +88,16 @@ export default async function ProductDetailPage({ params }: ProductDetailPagePro
 
         <div className="grid gap-8 lg:grid-cols-12">
           <div className="space-y-6 lg:col-span-7 xl:col-span-8">
-            <div className="group relative aspect-video w-full overflow-hidden rounded-2xl bg-muted shadow-sm">
-              <Image
-                src={`https://picsum.photos/seed/${product.id}/1200/800`}
-                alt={product.name}
-                fill
-                sizes="(max-width: 1280px) 100vw, 66vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute left-4 top-4">
-                <Badge variant={statusInfo.variant} className="px-3 py-1 shadow-lg backdrop-blur-md">
-                  {statusInfo.label}
-                </Badge>
-              </div>
-            </div>
+            <ProductGallery imageUrls={product.imageUrls} productName={product.name} />
 
             <Card className="border-none bg-transparent shadow-none">
               <CardHeader className="border-none px-0 pt-0">
                 <div className="mb-2 flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-primary">
                   <ShieldCheck className="h-4 w-4" />
                   {product.categoryName}
+                  <Badge variant={statusInfo.variant} className="ml-2">
+                    {statusInfo.label}
+                  </Badge>
                 </div>
                 <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl">
                   {product.name}

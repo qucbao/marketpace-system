@@ -3,12 +3,13 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { Clock, MapPin, ShieldCheck, ShoppingCart } from "lucide-react";
+import { Clock, MapPin, ShieldCheck, ShoppingCart, Image as ImageIcon } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
 
 import { Badge, Button, Card, CardContent } from "@/components/ui";
 import { useCart } from "@/hooks/use-cart";
+import { filesApi } from "@/lib/api/files";
 import type { CategoryResponse, ProductResponse, ProductStatus } from "@/types";
 
 interface ProductCardProps {
@@ -38,6 +39,10 @@ export function ProductCard({ product, category }: ProductCardProps) {
   const categoryName = category?.name ?? product.categoryName;
   const statusInfo = STATUS_MAP[product.status] || STATUS_MAP.HIDDEN;
 
+  const mainImage = product.imageUrls && product.imageUrls.length > 0 
+    ? filesApi.getDownloadUrl(product.imageUrls[0].split('/').pop() || '')
+    : null;
+
   async function handleAddToCart(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
     event.stopPropagation();
@@ -65,13 +70,19 @@ export function ProductCard({ product, category }: ProductCardProps) {
       >
         <Card className="h-full overflow-hidden border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5">
           <div className="relative aspect-[4/3] w-full overflow-hidden bg-muted">
-            <Image
-              src={`https://picsum.photos/seed/${product.id}/400/300`}
-              alt={product.name}
-              fill
-              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
-              className="object-cover transition-transform duration-500 group-hover:scale-110"
-            />
+            {mainImage ? (
+              <Image
+                src={mainImage}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 20vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-110"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center bg-slate-100 text-slate-300">
+                <ImageIcon className="h-12 w-12" />
+              </div>
+            )}
 
             <div className="absolute left-3 top-3">
               <Badge variant={statusInfo.variant} className="shadow-sm backdrop-blur-md">

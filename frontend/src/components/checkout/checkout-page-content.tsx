@@ -110,14 +110,29 @@ export function CheckoutPageContent() {
                   </Select>
                 </FormField>
 
+                {depositAmount > 0 && !order ? (
+                  <div className="mt-4 flex flex-col items-center justify-center p-4 border border-orange-200 bg-orange-50 rounded-xl space-y-3">
+                    <p className="font-semibold text-orange-800">Quét mã QR để đặt cọc</p>
+                    <img 
+                      src={`https://img.vietqr.io/image/970422-0123456789-compact2.png?amount=${depositAmount}&addInfo=ThanhToanCoc&accountName=MARKETPLACE`} 
+                      alt="VietQR"
+                      className="w-48 h-48 rounded-lg shadow-sm"
+                    />
+                    <p className="text-xs text-orange-600/80 text-center max-w-[250px]">
+                      Sử dụng App ngân hàng hoặc VNPay quét mã này để chuyển khoản số tiền cọc {formatPrice(depositAmount)}.
+                    </p>
+                  </div>
+                ) : null}
+
                 <Button
                   type="button"
                   variant="secondary"
                   onClick={handleCheckout}
                   isLoading={submitting}
                   disabled={loading || !!cartErrorMessage || !!checkoutError || items.length === 0}
+                  className="w-full bg-slate-900 text-white hover:bg-slate-800 mt-4"
                 >
-                  Submit checkout
+                  {depositAmount > 0 ? "Tôi đã chuyển khoản - Xác nhận" : "Xác nhận đặt hàng"}
                 </Button>
               </CardContent>
             </Card>

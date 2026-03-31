@@ -6,13 +6,12 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class ProductCreateRequest {
 
-    @NotNull(message = "Shop id is required")
     private Long shopId;
 
-    @NotNull(message = "Owner id is required")
     private Long ownerId;
 
     @NotNull(message = "Category id is required")
@@ -33,6 +32,11 @@ public class ProductCreateRequest {
     @NotNull(message = "Price is required")
     @DecimalMin(value = "0.01", message = "Price must be greater than 0")
     private BigDecimal price;
+
+    @NotNull(message = "Stock is required")
+    private Integer stock;
+
+    private List<String> imageUrls;
 
     public ProductCreateRequest() {
     }
@@ -91,5 +95,21 @@ public class ProductCreateRequest {
 
     public void setPrice(BigDecimal price) {
         this.price = price;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }

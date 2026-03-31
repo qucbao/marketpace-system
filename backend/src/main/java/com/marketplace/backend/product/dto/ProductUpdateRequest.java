@@ -7,6 +7,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public class ProductUpdateRequest {
 
@@ -34,6 +35,11 @@ public class ProductUpdateRequest {
 
     @NotNull(message = "Product status is required")
     private ProductStatus status;
+
+    @NotNull(message = "Stock is required")
+    private Integer stock;
+
+    private List<String> imageUrls;
 
     public ProductUpdateRequest() {
     }
@@ -92,5 +98,21 @@ public class ProductUpdateRequest {
 
     public void setStatus(ProductStatus status) {
         this.status = status;
+    }
+
+    public Integer getStock() {
+        return stock;
+    }
+
+    public void setStock(Integer stock) {
+        this.stock = stock;
+    }
+
+    public List<String> getImageUrls() {
+        return imageUrls;
+    }
+
+    public void setImageUrls(List<String> imageUrls) {
+        this.imageUrls = imageUrls;
     }
 }
