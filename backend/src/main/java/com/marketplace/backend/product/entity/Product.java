@@ -35,7 +35,7 @@ public class Product {
     @Column(nullable = false, length = 1000)
     private String description;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "`condition`", nullable = false, length = 100)
     private String condition;
 
     @Column(nullable = false, precision = 12, scale = 2)
@@ -65,10 +65,10 @@ public class Product {
     @Column(nullable = false)
     private Instant updatedAt;
 
-    @Column(name = "average_rating")
+    @Column(name = "average_rating", nullable = false)
     private Double averageRating = 0.0;
 
-    @Column(name = "sold_count")
+    @Column(name = "sold_count", nullable = false)
     private Integer soldCount = 0;
 
     public Product() {

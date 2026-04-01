@@ -77,7 +77,8 @@ public class OrderService {
         for (CartItem cartItem : cartItems) {
             Product product = cartItem.getProduct();
             product.setStock(product.getStock() - cartItem.getQuantity());
-            product.setSoldCount(product.getSoldCount() + cartItem.getQuantity());
+            int currentSoldCount = (product.getSoldCount() != null) ? product.getSoldCount() : 0;
+            product.setSoldCount(currentSoldCount + cartItem.getQuantity());
             if (product.getStock() <= 0) {
                 product.setStatus(ProductStatus.SOLD);
             }
@@ -278,7 +279,8 @@ public class OrderService {
             for (OrderItem item : order.getItems()) {
                 Product product = item.getProduct();
                 product.setStock(product.getStock() + item.getQuantity());
-                product.setSoldCount(Math.max(0, product.getSoldCount() - item.getQuantity()));
+                int currentSoldCount = (product.getSoldCount() != null) ? product.getSoldCount() : 0;
+                product.setSoldCount(Math.max(0, currentSoldCount - item.getQuantity()));
                 if (product.getStatus() == ProductStatus.SOLD) {
                     product.setStatus(ProductStatus.ACTIVE);
                 }
