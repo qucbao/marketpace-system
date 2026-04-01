@@ -320,6 +320,12 @@ public class OrderService {
         Order order = getOrderEntity(orderId);
         OrderStatus status = OrderStatus.valueOf(statusName);
         order.setStatus(status);
+        
+        // Nếu admin dổi sang ESCROW_HOLDING, coi như xác nhận dã giao hàng thành công
+        if (status == OrderStatus.ESCROW_HOLDING) {
+            order.setEscrowHoldAt(Instant.now());
+        }
+        
         return toResponse(orderRepository.save(order));
     }
 }

@@ -278,8 +278,9 @@ export default function OrderDetailPage() {
               )}
 
               {/* Confirm Delivery Action */}
-              {(order.status === "SHIPPING" || order.status === "DELIVERED") && (
-                <Card className="border-emerald-200 bg-emerald-50">
+              {((order.checkoutType === "DELIVERY" && (order.status === "SHIPPING" || order.status === "DELIVERED")) || 
+                (order.checkoutType === "PICKUP" && (order.status === "PAID_DEPOSIT" || order.status === "PREPARING"))) && (
+                <Card className="border-emerald-200 bg-emerald-50 ring-1 ring-emerald-100 shadow-sm">
                   <CardContent className="p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
                     <div className="flex items-center gap-3">
                        <CheckCircle className="h-6 w-6 text-emerald-600" />

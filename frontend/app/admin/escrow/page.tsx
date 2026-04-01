@@ -25,7 +25,12 @@ export default function AdminEscrowPage() {
       setLoading(true);
       const res = await adminOrdersApi.getAll();
       if (res.success) {
-        setOrders(res.data.filter(o => o.status === 'ESCROW_HOLDING' || o.status === 'COMPLETED'));
+        setOrders(res.data.filter(o => 
+          o.status === 'SHIPPING' || 
+          o.status === 'DELIVERED' || 
+          o.status === 'ESCROW_HOLDING' || 
+          o.status === 'COMPLETED'
+        ));
       }
     } catch (err: any) {
       toast.error(err.message || "Không thể tải danh sách giam tiền.");
@@ -48,6 +53,19 @@ export default function AdminEscrowPage() {
       }
     } catch (err: any) {
       toast.error(err.message || "Giải ngân thất bại!");
+    }
+  };
+
+  const handleConfirmOrder = async (id: number) => {
+    if (!confirm("Xác nhận đơn hàng này đã giao hàng thành công và bắt đầu quy trình GIAM TIỀN 3 ngày?")) return;
+    try {
+      const res = await adminOrdersApi.updateStatus(id, "ESCROW_HOLDING");
+      if (res.success) {
+        toast.success("Xác nhận thành công! Tiền đã chuyển vào trạng thái GIAM.");
+        setOrders(prev => prev.map(o => o.id === id ? res.data : o));
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Xác nhận thất bại!");
     }
   };
 
@@ -131,11 +149,24 @@ export default function AdminEscrowPage() {
                              <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold ${isReadyToRelease(order.escrowHoldAt?.toString()) ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
                                 <Clock className="h-3 w-3" /> {order.escrowHoldAt ? getEscrowTimeRemaining(order.escrowHoldAt.toString()) : '---'}
                              </span>
+                           ) : order.status === 'SHIPPING' || order.status === 'DELIVERED' ? (
+                             <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold ring-1 ring-blue-600/20">
+                                <Clock className="h-3 w-3" /> Đang/Đã giao
+                             </span>
                            ) : (
-                             <span className="text-emerald-500 font-bold text-xs flex items-center justify-center gap-1"><CheckCircle className="h-3 w-3" /> Đã trả</span>
+                             <span className="text-emerald-500 font-bold text-xs flex items-center justify-center gap-1"><CheckCircle className="h-3 w-3" /> Đã hoàn tất</span>
                            )}
                         </td>
                         <td className="px-6 py-4 text-right">
+                           {(order.status === 'SHIPPING' || order.status === 'DELIVERED') && (
+                             <Button 
+                               size="sm" 
+                               onClick={() => handleConfirmOrder(order.id)}
+                               className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 text-xs"
+                             >
+                               XÁC NHẬN (DONE)
+                             </Button>
+                           )}
                            {order.status === 'ESCROW_HOLDING' && (
                              <Button 
                                size="sm" 
